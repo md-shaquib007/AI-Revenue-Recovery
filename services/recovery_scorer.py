@@ -49,12 +49,15 @@ class MultiDimensionalRecoveryScorer:
         # Strategy A: Hard Retry / Demand Full
         ev_demand_full = (p_pay_now * amount_rupees) + ((1.0 - p_churn_risk * 1.5) * projected_ltv * 0.10)
 
-        # Strategy B: Partial Waterfall Slicing (33% slice + salary sync)
-        ev_partial_waterfall = (
-            (p_accept_partial * (amount_rupees * 0.33))
-            + (p_pay_salary * (amount_rupees * 0.67))
-            + ((1.0 - p_churn_risk * 0.4) * projected_ltv * 0.10)
-        )
+        # Strategy B: Partial Waterfall Slicing (33% slice + salary sync) - Guardrail: Only for amounts >= ₹500
+        if amount_rupees >= 500.0:
+            ev_partial_waterfall = (
+                (p_accept_partial * (amount_rupees * 0.33))
+                + (p_pay_salary * (amount_rupees * 0.67))
+                + ((1.0 - p_churn_risk * 0.4) * projected_ltv * 0.10)
+            )
+        else:
+            ev_partial_waterfall = 0.0  # Guardrail: Micro-amounts below ₹500 cannot be sliced due to gateway minimums
 
         # Strategy C: 14-Day Smart Holiday Pause
         ev_holiday_pause = (1.0 - p_churn_risk * 0.2) * projected_ltv * 0.08
@@ -64,11 +67,13 @@ class MultiDimensionalRecoveryScorer:
 
         # Determine Optimal Strategy by maximum EV
         strategies = {
-            "PARTIAL_WATERFALL_SLICING": round(ev_partial_waterfall, 2),
             "DEMAND_FULL_PAYMENT": round(ev_demand_full, 2),
             "MICRO_TIER_DOWNSELL": round(ev_downsell, 2),
             "SMART_HOLIDAY_PAUSE": round(ev_holiday_pause, 2),
         }
+        if amount_rupees >= 500.0:
+            strategies["PARTIAL_WATERFALL_SLICING"] = round(ev_partial_waterfall, 2)
+
         best_strategy = max(strategies, key=strategies.get)
 
         overall_recovery_score = int((p_pay_salary * 0.5 + p_accept_partial * 0.3 + (1.0 - p_churn_risk) * 0.2) * 100)
