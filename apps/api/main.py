@@ -112,6 +112,21 @@ app.include_router(stream_router, prefix="/api/v1")
 app.include_router(system_router, prefix="/api/v1")
 
 
+@app.get("/")
+@app.head("/")
+async def root():
+    return {
+        "service": settings.app_name,
+        "status": "online",
+        "version": settings.app_version,
+        "axiom": "AI proposes. Policy decides. Systems execute.",
+        "docs": "/docs",
+        "health": "/health",
+        "ready": "/ready",
+        "api_v1_base": "/api/v1",
+    }
+
+
 @app.get("/health")
 async def healthcheck():
     return {
