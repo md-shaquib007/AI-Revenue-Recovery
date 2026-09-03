@@ -112,19 +112,16 @@ app.include_router(stream_router, prefix="/api/v1")
 app.include_router(system_router, prefix="/api/v1")
 
 
-@app.get("/")
-@app.head("/")
-async def root():
-    return {
-        "service": settings.app_name,
-        "status": "online",
-        "version": settings.app_version,
-        "axiom": "AI proposes. Policy decides. Systems execute.",
-        "docs": "/docs",
-        "health": "/health",
-        "ready": "/ready",
-        "api_v1_base": "/api/v1",
-    }
+# Setup Static Web UI Hosting (Unified Next.js Full-Stack)
+import os
+from fastapi.responses import FileResponse, PlainTextResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+
+_UI_OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "apps", "web", "out")
+_NEXT_STATIC_DIR = os.path.join(_UI_OUT_DIR, "_next")
+
+if os.path.exists(_NEXT_STATIC_DIR):
+    app.mount("/_next", StaticFiles(directory=_NEXT_STATIC_DIR), name="next_static")
 
 
 @app.get("/health")
@@ -153,6 +150,39 @@ async def readiness():
 @app.get("/metrics")
 async def prometheus_metrics():
     return PlainTextResponse(metrics.prometheus(), media_type="text/plain; version=0.0.4")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_unified_ui(full_path: str):
+    """Serves the Next.js visual Command Center directly from the FastAPI container."""
+    if full_path.startswith("api/") or full_path in ("docs", "openapi.json"):
+        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+
+    if os.path.exists(_UI_OUT_DIR):
+        clean_path = full_path.strip("/")
+        # Check specific html route (e.g. /sandbox -> sandbox.html)
+        html_candidate = os.path.join(_UI_OUT_DIR, f"{clean_path}.html")
+        if clean_path and os.path.isfile(html_candidate):
+            return FileResponse(html_candidate)
+        # Check direct asset file (e.g. images, favicon.ico)
+        direct_candidate = os.path.join(_UI_OUT_DIR, clean_path)
+        if clean_path and os.path.isfile(direct_candidate):
+            return FileResponse(direct_candidate)
+        # Default to root index.html
+        index_file = os.path.join(_UI_OUT_DIR, "index.html")
+        if os.path.isfile(index_file):
+            return FileResponse(index_file)
+
+    return {
+        "service": settings.app_name,
+        "status": "online",
+        "version": settings.app_version,
+        "axiom": "AI proposes. Policy decides. Systems execute.",
+        "docs": "/docs",
+        "health": "/health",
+        "ready": "/ready",
+        "api_v1_base": "/api/v1",
+    }
 
 
 if __name__ == "__main__":
