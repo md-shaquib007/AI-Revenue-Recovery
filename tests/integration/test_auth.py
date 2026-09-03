@@ -73,7 +73,7 @@ async def test_all_five_rbac_roles_login_and_scopes():
     """Validates that all 5 least-privilege enterprise RBAC roles can log in and receive their scopes."""
     roles_to_test = [
         ("ops", "revive-ops-2026", "admin"),
-        ("admin", "revive-admin-2026", "admin"),
+        ("admin", "revive-ops-2026", "admin"),
         ("risk_admin", "revive-risk-2026", "risk_admin"),
         ("operator", "revive-op-2026", "operator"),
         ("auditor", "revive-audit-2026", "auditor"),

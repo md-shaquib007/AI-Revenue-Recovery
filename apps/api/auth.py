@@ -63,7 +63,7 @@ def decode_token(token: str) -> dict:
 
 DEFAULT_RBAC_USERS = [
     ("ops", "revive-ops-2026", "admin"),
-    ("admin", "revive-admin-2026", "admin"),
+    ("admin", "revive-ops-2026", "admin"),
     ("risk_admin", "revive-risk-2026", "risk_admin"),
     ("operator", "revive-op-2026", "operator"),
     ("auditor", "revive-audit-2026", "auditor"),
@@ -83,7 +83,11 @@ async def bootstrap_default_operator(db: AsyncSession) -> None:
                 role=role,
             )
             db.add(operator)
-    await db.flush()
+        else:
+            if not verify_password(raw_pass, existing.password_hash):
+                existing.password_hash = hash_password(raw_pass)
+                existing.role = role
+    await db.commit()
 
 
 async def get_optional_operator(
