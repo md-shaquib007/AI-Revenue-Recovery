@@ -29,6 +29,7 @@ from services.churn_rescue import churn_rescue_engine
 from services.db import get_db
 from services.event_bus import event_bus
 from services.fatigue import timestamps_as_datetimes
+from services.lift_engine import lift_engine
 from services.voice_agent import voice_agent_service
 
 router = APIRouter(prefix="/intel", tags=["Intelligence"])
@@ -648,4 +649,15 @@ async def evaluate_churn_rescue(
         payment=payment,
         consecutive_failures=req.consecutive_failures,
     )
+
+
+@router.get("/lift-metrics")
+async def get_scientific_lift_metrics(
+    _: OperatorContext = Depends(require_operator),
+):
+    """
+    Returns verified Scientific A/B Lift Metrics comparing 90% REVIVE Autonomous Treatment
+    against 10% Legacy Holdout Control, proving incremental ARR recovery mathematically.
+    """
+    return lift_engine.calculate_lift_report()
 

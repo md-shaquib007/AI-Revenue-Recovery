@@ -55,3 +55,22 @@ async def test_futuristic_churn_rescue_evaluation():
         assert "micro_tier_downsell" in data["strategies"]
         assert data["strategies"]["micro_tier_downsell"]["discount_pct"] >= 50
         assert data["preserved_ltv_rupees"] > 0
+
+
+@pytest.mark.asyncio
+async def test_scientific_lift_metrics_endpoint():
+    """Validates Scientific A/B Lift metrics and 10% holdout control reporting."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        login_res = await client.post("/api/v1/auth/login", json={"username": "ops", "password": "revive-ops-2026"})
+        token = login_res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        res = await client.get("/api/v1/intel/lift-metrics", headers=headers)
+        assert res.status_code == 200
+        data = res.json()
+        assert data["status"] == "STATISTICALLY_SIGNIFICANT"
+        assert "10% Control" in data["holdout_ratio"]
+        assert "incremental_recovered_arr_rupees" in data["summary"]
+        assert data["summary"]["incremental_recovered_arr_rupees"] > 0
+        assert "cfo_roi_narrative" in data
