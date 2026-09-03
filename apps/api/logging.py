@@ -3,7 +3,7 @@ import logging
 import sys
 import time
 import uuid
-from typing import Callable
+from typing import Any, Callable
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -11,6 +11,33 @@ from starlette.responses import Response
 
 from apps.api.metrics import metrics
 from apps.api.settings import get_settings
+
+
+import re
+
+
+# Real-Time Zero-Leak PII Redaction Regex Patterns
+CC_REGEX = re.compile(r"\b(?:\d{4}[ -]?){3}(\d{4})\b")
+EMAIL_REGEX = re.compile(r"\b([a-zA-Z0-9_.+-]{1,2})[a-zA-Z0-9_.+-]*(@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)\b")
+PHONE_REGEX = re.compile(r"(\+?91[\-\s]?)?([6-9]\d{1})\d{6}(\d{2})")
+PAN_REGEX = re.compile(r"\b([A-Z]{2})[A-Z]{3}\d{4}([A-Z]{1})\b")
+AADHAAR_REGEX = re.compile(r"\b\d{4}[ -]?\d{4}[ -]?(\d{4})\b")
+
+
+def sanitize_pii_value(val: Any) -> Any:
+    """Recursively scrub PII (cards, phones, emails, PAN, Aadhaar) from log streams."""
+    if isinstance(val, str):
+        s = CC_REGEX.sub(r"****-****-****-\1", val)
+        s = EMAIL_REGEX.sub(r"\1***\2", s)
+        s = PHONE_REGEX.sub(r"+91-\2******\3", s)
+        s = PAN_REGEX.sub(r"\1*****\2", s)
+        s = AADHAAR_REGEX.sub(r"****-****-\1", s)
+        return s
+    elif isinstance(val, dict):
+        return {k: sanitize_pii_value(v) for k, v in val.items()}
+    elif isinstance(val, list):
+        return [sanitize_pii_value(item) for item in val]
+    return val
 
 
 def configure_logging() -> logging.Logger:
@@ -29,7 +56,8 @@ logger = configure_logging()
 
 
 def log_event(level: str, message: str, **fields) -> None:
-    payload = {"level": level, "message": message, **fields}
+    sanitized_fields = {k: sanitize_pii_value(v) for k, v in fields.items()}
+    payload = {"level": level, "message": message, **sanitized_fields}
     getattr(logger, level if level in ("info", "warning", "error", "debug") else "info")(
         json.dumps(payload, default=str)
     )

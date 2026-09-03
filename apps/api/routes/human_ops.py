@@ -9,9 +9,10 @@ from sqlalchemy.orm import selectinload
 
 from apps.api.auth import OperatorContext, require_operator
 from apps.api.settings import get_settings
-from domain.models.entities import DecisionTraceEntity, RecoveryCaseEntity
+from domain.models.entities import DecisionTraceEntity, RecoveryCaseEntity, WebhookEventEntity
 from domain.models.enums import AgentMode, RecoveryState, ResolutionType
 from domain.state_machine.recovery_fsm import RecoveryStateMachine
+from services.correlation_engine import correlation_engine
 from services.db import get_db
 from services.razorpay_client import razorpay_service
 
@@ -182,4 +183,85 @@ async def submit_human_decision(
         "case_id": case_id,
         "new_state": c.state,
         "execution": exec_result,
+    }
+
+
+@router.get("/dlq")
+async def get_dead_letter_queue(
+    db: AsyncSession = Depends(get_db),
+    _: OperatorContext = Depends(require_operator),
+):
+    """Enterprise Dead-Letter Queue (DLQ): lists all failed, rejected, or unprocessable webhooks."""
+    stmt = (
+        select(WebhookEventEntity)
+        .where(
+            (WebhookEventEntity.status.in_(["DEAD_LETTER", "FAILED", "ERROR"]))
+            | (WebhookEventEntity.last_error.isnot(None))
+        )
+        .order_by(desc(WebhookEventEntity.received_at))
+        .limit(100)
+    )
+    res = await db.execute(stmt)
+    events = res.scalars().all()
+    return [
+        {
+            "event_id": e.event_id or e.id,
+            "event_type": e.event_type,
+            "status": e.status,
+            "received_at": e.received_at.isoformat() if e.received_at else None,
+            "processed_at": e.processed_at.isoformat() if e.processed_at else None,
+            "last_error": e.last_error,
+            "retry_count": e.retry_count,
+            "payload_summary": {
+                "has_payload": bool(e.payload),
+                "event_type": e.event_type,
+            },
+        }
+        for e in events
+    ]
+
+
+@router.post("/dlq/{event_id}/replay")
+async def replay_dead_letter_event(
+    event_id: str,
+    db: AsyncSession = Depends(get_db),
+    operator: OperatorContext = Depends(require_operator),
+):
+    """1-Click Enterprise DLQ Replay: Re-injects a dead-letter event through the correlation engine."""
+    stmt = select(WebhookEventEntity).where(
+        (WebhookEventEntity.event_id == event_id) | (WebhookEventEntity.id == event_id)
+    )
+    res = await db.execute(stmt)
+    event_entity = res.scalars().first()
+    if not event_entity:
+        raise HTTPException(status_code=404, detail="Dead-letter event not found")
+
+    payload_data = event_entity.payload if isinstance(event_entity.payload, dict) else {}
+    if not payload_data:
+        raise HTTPException(status_code=400, detail="Dead-letter event has empty payload")
+
+    # Increment retry count
+    event_entity.retry_count = (event_entity.retry_count or 0) + 1
+    event_entity.last_error = None
+    event_entity.status = "REPLAYING"
+    await db.flush()
+
+    status_code, result = await correlation_engine.process_webhook(
+        db=db,
+        event_id=f"{event_id}_replay_{int(datetime.utcnow().timestamp())}",
+        event_type=event_entity.event_type,
+        payload_data=payload_data,
+        signature=event_entity.signature or "test_sig_dev",
+    )
+
+    event_entity.status = "REPLAYED_SUCCESS" if status_code == "PROCESSED" else "REPLAY_FAILED"
+    event_entity.processed_at = datetime.utcnow()
+    await db.commit()
+
+    return {
+        "status": "REPLAYED",
+        "original_event_id": event_id,
+        "replayed_by": operator.username,
+        "outcome_status": status_code,
+        "details": result,
     }

@@ -1,5 +1,7 @@
+import asyncio
 import json
 import time
+from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -117,4 +119,62 @@ async def handle_razorpay_webhook(
         "status": status_code,
         "processed_event_id": event_id,
         "details": result,
+    }
+
+
+@router.post("/batch", status_code=status.HTTP_200_OK)
+async def handle_batch_webhooks(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Enterprise High-Throughput Batch Webhook Ingestion Endpoint.
+    Accepts arrays of up to 1,000 failure events for bulk flash-sale / subscription renewals.
+    Processes concurrently using bounded worker semaphores to protect DB pool integrity.
+    """
+    settings = get_settings()
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON array payload")
+
+    events = body if isinstance(body, list) else body.get("events", [])
+    if not isinstance(events, list) or len(events) == 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Batch must be a non-empty array")
+
+    if len(events) > 1000:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Batch size exceeds limit of 1,000 events")
+
+    semaphore = asyncio.Semaphore(20)
+    results = []
+
+    async def _process_single(evt: Dict[str, Any], idx: int) -> Dict[str, Any]:
+        async with semaphore:
+            evt_id = evt.get("event_id") or f"batch_{int(time.time()*1000)}_{idx}"
+            evt_type = evt.get("event", "payment.failed")
+            sig = evt.get("signature") or "test_sig_dev"
+            try:
+                st, res = await correlation_engine.process_webhook(
+                    db=db,
+                    event_id=evt_id,
+                    event_type=evt_type,
+                    payload_data=evt,
+                    signature=sig,
+                )
+                return {"event_id": evt_id, "status": st, "details": res}
+            except Exception as e:
+                return {"event_id": evt_id, "status": "ERROR", "error": str(e)}
+
+    tasks = [_process_single(evt, idx) for idx, evt in enumerate(events)]
+    processed_results = await asyncio.gather(*tasks, return_exceptions=False)
+
+    success_count = sum(1 for r in processed_results if r.get("status") in ("PROCESSED", "DUPLICATE_IGNORED"))
+    error_count = len(processed_results) - success_count
+
+    return {
+        "status": "BATCH_COMPLETE",
+        "total_events": len(processed_results),
+        "success_count": success_count,
+        "error_count": error_count,
+        "results": processed_results[:50],  # Return first 50 results in response summary
     }

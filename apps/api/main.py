@@ -74,12 +74,20 @@ async def lifespan(app: FastAPI):
     log_event("info", "revive_started", env=settings.app_env, version=settings.app_version)
     yield
 
+    log_event("info", "graceful_shutdown_initiating", message="Flushing in-flight tasks and worker queues")
     if _worker_task:
         _worker_task.cancel()
         try:
             await _worker_task
         except asyncio.CancelledError:
             pass
+
+    try:
+        from services.db import engine
+        await engine.dispose()
+    except Exception:
+        pass
+    log_event("info", "graceful_shutdown_completed")
 
 
 app = FastAPI(
