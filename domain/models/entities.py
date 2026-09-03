@@ -23,6 +23,7 @@ class WebhookEventEntity(Base):
     __table_args__ = (UniqueConstraint("event_id", name="uq_webhook_events_event_id"),)
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(64), default="default_tenant", nullable=False, index=True)
     event_id = Column(String(128), unique=True, nullable=False, index=True)
     event_type = Column(String(64), nullable=False, index=True)
     payload = Column(JSON, nullable=False)
@@ -38,6 +39,7 @@ class PaymentEntity(Base):
     __tablename__ = "payments"
 
     id = Column(String(64), primary_key=True)
+    tenant_id = Column(String(64), default="default_tenant", nullable=False, index=True)
     order_id = Column(String(64), nullable=True, index=True)
     customer_id = Column(String(64), ForeignKey("customers.id"), nullable=False, index=True)
     amount_in_paise = Column(BigInteger, nullable=False)
@@ -59,6 +61,7 @@ class CustomerEntity(Base):
     __tablename__ = "customers"
 
     id = Column(String(64), primary_key=True)
+    tenant_id = Column(String(64), default="default_tenant", nullable=False, index=True)
     name = Column(String(128), nullable=False)
     email = Column(String(128), nullable=False, index=True)
     phone = Column(String(32), nullable=True)
@@ -79,6 +82,7 @@ class SubscriptionEntity(Base):
     __tablename__ = "subscriptions"
 
     id = Column(String(64), primary_key=True)
+    tenant_id = Column(String(64), default="default_tenant", nullable=False, index=True)
     customer_id = Column(String(64), ForeignKey("customers.id"), nullable=False, index=True)
     plan_id = Column(String(64), nullable=False)
     status = Column(String(32), nullable=False, index=True)
@@ -95,6 +99,7 @@ class RecoveryCaseEntity(Base):
     __tablename__ = "recovery_cases"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(64), default="default_tenant", nullable=False, index=True)
     payment_id = Column(String(64), ForeignKey("payments.id"), nullable=False, unique=True, index=True)
     customer_id = Column(String(64), ForeignKey("customers.id"), nullable=False, index=True)
     state = Column(String(32), nullable=False, index=True)
@@ -126,6 +131,7 @@ class DecisionTraceEntity(Base):
     __tablename__ = "decision_traces"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(64), default="default_tenant", nullable=False, index=True)
     case_id = Column(String(36), ForeignKey("recovery_cases.id"), nullable=False, index=True)
     step_number = Column(Integer, nullable=False)
     agent_mode = Column(String(32), nullable=False)

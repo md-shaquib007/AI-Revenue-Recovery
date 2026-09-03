@@ -109,10 +109,37 @@ async def require_operator(
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
 
+# Fine-Grained RBAC Permissions Matrix
+ROLE_PERMISSIONS = {
+    "admin": ["*"],
+    "risk_admin": ["cases:read", "cases:write", "policies:write", "sentinel:write", "dlq:read", "dlq:replay", "audit:export"],
+    "operator": ["cases:read", "cases:approve", "dlq:read", "dlq:replay", "audit:export"],
+    "auditor": ["cases:read", "audit:export", "metrics:read"],
+    "viewer": ["cases:read", "metrics:read"],
+}
+
+
+def has_permission(role: str, permission: str) -> bool:
+    perms = ROLE_PERMISSIONS.get(role, [])
+    return "*" in perms or permission in perms
+
+
 def require_admin(operator: OperatorContext = Depends(require_operator)) -> OperatorContext:
     if operator.role not in ("admin", "operator"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient role")
     return operator
+
+
+def require_permission(permission: str):
+    """Dependency factory enforcing fine-grained enterprise RBAC scopes."""
+    def _dependency(operator: OperatorContext = Depends(require_operator)) -> OperatorContext:
+        if not has_permission(operator.role, permission):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Missing required permission: '{permission}' (Your role: '{operator.role}')",
+            )
+        return operator
+    return _dependency
 
 
 async def require_chaos(operator: OperatorContext = Depends(require_operator)) -> OperatorContext:

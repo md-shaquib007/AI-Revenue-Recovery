@@ -57,6 +57,12 @@ async def init_db(max_retries: int = 3, retry_delay: float = 0.5):
                         "ALTER TABLE recovery_cases ADD COLUMN amount_recovered_paise BIGINT DEFAULT 0",
                         "ALTER TABLE recovery_cases ADD COLUMN balance_due_paise BIGINT",
                         "ALTER TABLE recovery_cases ADD COLUMN partial_payments_count INTEGER DEFAULT 0",
+                        "ALTER TABLE webhook_events ADD COLUMN tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE payments ADD COLUMN tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE customers ADD COLUMN tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE subscriptions ADD COLUMN tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE recovery_cases ADD COLUMN tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE decision_traces ADD COLUMN tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
                     ]:
                         try:
                             await conn.execute(text(sql))
@@ -68,6 +74,12 @@ async def init_db(max_retries: int = 3, retry_delay: float = 0.5):
                         "ALTER TABLE recovery_cases ADD COLUMN IF NOT EXISTS amount_recovered_paise BIGINT DEFAULT 0",
                         "ALTER TABLE recovery_cases ADD COLUMN IF NOT EXISTS balance_due_paise BIGINT",
                         "ALTER TABLE recovery_cases ADD COLUMN IF NOT EXISTS partial_payments_count INTEGER DEFAULT 0",
+                        "ALTER TABLE webhook_events ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE payments ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE customers ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE recovery_cases ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
+                        "ALTER TABLE decision_traces ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default_tenant'",
                     ]:
                         try:
                             await conn.execute(text(sql))

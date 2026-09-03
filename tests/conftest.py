@@ -22,8 +22,8 @@ from services.db import engine, init_db
 @pytest.fixture(autouse=True)
 async def setup_and_clean_test_database():
     """Ensures a clean database state with latest schema for each test."""
+    await init_db()
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
         for table in reversed(Base.metadata.sorted_tables):
             await conn.execute(text(f"DELETE FROM {table.name}"))
     yield
