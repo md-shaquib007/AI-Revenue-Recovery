@@ -308,6 +308,206 @@ async def customer_self_service_portal(case_id: str):
 </html>"""
 
 
+@app.get("/simulator", response_class=HTMLResponse, include_in_schema=False)
+async def serve_recovery_simulator():
+    """Renders the interactive Revenue Recovery Portfolio Simulator & CFO ROI Studio."""
+    return """<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REVIVE — Revenue Recovery Portfolio Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen py-10 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
+  <div class="max-w-4xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="text-center space-y-3">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+        <span>⚡ Interactive Portfolio Simulator</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+        Quantify Your Incremental ARR Recovery Lift
+      </h1>
+      <p class="text-sm text-slate-400 max-w-xl mx-auto">
+        Adjust your monthly failed volume to simulate counterfactual recovery gains across REVIVE's Bank Sentinel, Partial Slicing, and Salary-Cycle Sweeping engines.
+      </p>
+    </div>
+
+    <!-- Simulator Form & Controls -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Controls Column -->
+      <div class="md:col-span-1 p-6 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-6 shadow-2xl">
+        <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center space-x-2">
+          <span>⚙️ Parameters</span>
+        </h3>
+
+        <!-- Volume Slider -->
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-400">Monthly Failed Volume</span>
+            <span id="volLabel" class="text-emerald-400 font-bold">₹50,00,000</span>
+          </div>
+          <input id="volSlider" type="range" min="500000" max="20000000" step="500000" value="5000000" class="w-full accent-emerald-500 cursor-pointer" oninput="updateSim()">
+        </div>
+
+        <!-- Ticket Size Slider -->
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-400">Avg Ticket Size</span>
+            <span id="ticketLabel" class="text-emerald-400 font-bold">₹5,000</span>
+          </div>
+          <input id="ticketSlider" type="range" min="500" max="25000" step="500" value="5000" class="w-full accent-emerald-500 cursor-pointer" oninput="updateSim()">
+        </div>
+
+        <!-- Gateway Selector -->
+        <div class="space-y-2">
+          <label class="text-xs text-slate-400">Primary Gateway</label>
+          <select id="gatewaySelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 font-semibold focus:border-emerald-500 outline-none" onchange="updateSim()">
+            <option value="RAZORPAY">Razorpay (UPI / Autopay)</option>
+            <option value="STRIPE">Stripe (Cards / Invoicing)</option>
+            <option value="CHARGEBEE">Chargebee / Recurly</option>
+          </select>
+        </div>
+
+        <!-- Industry Selector -->
+        <div class="space-y-2">
+          <label class="text-xs text-slate-400">Industry Segment</label>
+          <select id="industrySelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 font-semibold focus:border-emerald-500 outline-none" onchange="updateSim()">
+            <option value="SAAS">B2B SaaS / Workspace</option>
+            <option value="EDTECH">EdTech & Courses</option>
+            <option value="FINTECH">FinTech & Wealth</option>
+            <option value="MEMBERSHIP">Fitness & Memberships</option>
+          </select>
+        </div>
+
+        <div class="pt-2">
+          <a href="/pay/demo-case" target="_blank" class="block w-full py-2.5 text-center rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-300 transition-all">
+            Preview /pay/case Portal →
+          </a>
+        </div>
+      </div>
+
+      <!-- Results Display -->
+      <div class="md:col-span-2 p-6 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-6 shadow-2xl flex flex-col justify-between">
+        <!-- Top Metrics Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-1">
+            <span class="text-[11px] text-slate-400 uppercase font-semibold">Baseline Recovery</span>
+            <div id="baselineRate" class="text-xl font-extrabold text-slate-400">31.2%</div>
+            <div id="baselineRupees" class="text-xs text-slate-500">₹15,60,000 / mo</div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-1">
+            <span class="text-[11px] text-emerald-400 uppercase font-bold">REVIVE Simulated</span>
+            <div id="reviveRate" class="text-xl font-extrabold text-emerald-400">71.6%</div>
+            <div id="reviveRupees" class="text-xs text-emerald-300 font-bold">₹35,80,000 / mo</div>
+          </div>
+
+          <div class="col-span-2 sm:col-span-1 p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 space-y-1">
+            <span class="text-[11px] text-cyan-400 uppercase font-bold">Incremental Lift</span>
+            <div id="liftPercentage" class="text-xl font-extrabold text-cyan-400">+40.4%</div>
+            <div id="liftAnnual" class="text-xs text-cyan-300 font-bold">+₹2.42 Cr / yr</div>
+          </div>
+        </div>
+
+        <!-- Strategy Breakdown Table -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Strategy Contribution Breakdown</h4>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+              <span class="text-slate-300">⚡ Bank Sentinel Outage Avoidance</span>
+              <span id="sentinelAmt" class="font-bold text-emerald-400">+₹6,20,000 (+12.4%)</span>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+              <span class="text-slate-300">💧 Partial Waterfall 33% Slicing</span>
+              <span id="slicingAmt" class="font-bold text-emerald-400">+₹8,40,000 (+16.8%)</span>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+              <span class="text-slate-300">⏰ Salary-Cycle 06:30 AM Sweeper</span>
+              <span id="salaryAmt" class="font-bold text-emerald-400">+₹3,80,000 (+7.6%)</span>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+              <span class="text-slate-300">🛡️ 14-Day Holiday Pause Churn Rescue</span>
+              <span id="pauseAmt" class="font-bold text-emerald-400">+₹1,80,000 (+3.6%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROI Summary Banner -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-teal-950/80 border border-emerald-500/30 flex items-center justify-between">
+          <div class="space-y-1">
+            <div class="text-xs font-bold text-emerald-300">Annual Preserved Customer LTV</div>
+            <div id="ltvPreserved" class="text-lg font-extrabold text-white">₹2,42,40,000</div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-400">Estimated ROI</span>
+            <div id="roiMultiple" class="text-2xl font-extrabold text-emerald-400">44.9x</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function formatINR(val) {
+      return '₹' + Math.round(val).toLocaleString('en-IN');
+    }
+
+    function updateSim() {
+      const vol = parseFloat(document.getElementById('volSlider').value);
+      const ticket = parseFloat(document.getElementById('ticketSlider').value);
+
+      document.getElementById('volLabel').innerText = formatINR(vol);
+      document.getElementById('ticketLabel').innerText = formatINR(ticket);
+
+      const baselineRate = 0.312;
+      const sentinelLift = 0.124;
+      const slicingLift = 0.168;
+      const salaryLift = 0.076;
+      const pauseLift = 0.036;
+
+      const reviveRate = Math.min(0.85, baselineRate + sentinelLift + slicingLift + salaryLift + pauseLift);
+      const netLift = reviveRate - baselineRate;
+
+      const baselineRupees = vol * baselineRate;
+      const reviveRupees = vol * reviveRate;
+      const monthlyLiftRupees = reviveRupees - baselineRupees;
+      const annualLiftRupees = monthlyLiftRupees * 12;
+
+      const count = Math.max(1, Math.round(vol / ticket));
+      const savedUsers = Math.round(count * netLift);
+      const ltvPreserved = savedUsers * (ticket * 12);
+      const roi = (monthlyLiftRupees / 45000).toFixed(1);
+
+      document.getElementById('baselineRate').innerText = (baselineRate * 100).toFixed(1) + '%';
+      document.getElementById('baselineRupees').innerText = formatINR(baselineRupees) + ' / mo';
+
+      document.getElementById('reviveRate').innerText = (reviveRate * 100).toFixed(1) + '%';
+      document.getElementById('reviveRupees').innerText = formatINR(reviveRupees) + ' / mo';
+
+      document.getElementById('liftPercentage').innerText = '+' + (netLift * 100).toFixed(1) + '%';
+      document.getElementById('liftAnnual').innerText = '+' + formatINR(annualLiftRupees) + ' / yr';
+
+      document.getElementById('sentinelAmt').innerText = '+' + formatINR(vol * sentinelLift) + ' (+12.4%)';
+      document.getElementById('slicingAmt').innerText = '+' + formatINR(vol * slicingLift) + ' (+16.8%)';
+      document.getElementById('salaryAmt').innerText = '+' + formatINR(vol * salaryLift) + ' (+7.6%)';
+      document.getElementById('pauseAmt').innerText = '+' + formatINR(vol * pauseLift) + ' (+3.6%)';
+
+      document.getElementById('ltvPreserved').innerText = formatINR(ltvPreserved);
+      document.getElementById('roiMultiple').innerText = roi + 'x';
+    }
+
+    updateSim();
+  </script>
+</body>
+</html>"""
+
+
 @app.get("/{full_path:path}", include_in_schema=False)
 @app.head("/{full_path:path}", include_in_schema=False)
 async def serve_unified_ui(full_path: str):

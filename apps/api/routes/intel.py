@@ -32,6 +32,7 @@ from services.fatigue import timestamps_as_datetimes
 from services.lift_engine import lift_engine
 from services.multi_psp import multi_psp_router
 from services.recovery_scorer import recovery_scorer
+from services.simulator import portfolio_simulator
 from services.state_graph import customer_state_graph
 from services.voice_agent import voice_agent_service
 
@@ -754,4 +755,28 @@ async def get_enterprise_command_center(
         },
         "active_psps": ["RAZORPAY_UPI_AUTOPAY", "STRIPE_GLOBAL_ACH"],
     }
+
+
+class PortfolioSimulationRequest(BaseModel):
+    monthly_failed_volume_rupees: float = 5000000.0  # ₹50 Lakhs
+    average_ticket_size_rupees: float = 5000.0
+    gateway: str = "RAZORPAY"
+    industry: str = "SAAS"
+
+
+@router.post("/simulate-portfolio")
+async def simulate_merchant_portfolio(
+    req: PortfolioSimulationRequest,
+    _: OperatorContext = Depends(require_operator),
+):
+    """
+    Simulates merchant-specific failed payment portfolio recovery lift,
+    quantifying incremental ARR and ROI multiple compared to legacy dunning.
+    """
+    return portfolio_simulator.simulate_portfolio(
+        monthly_failed_volume_rupees=req.monthly_failed_volume_rupees,
+        average_ticket_size_rupees=req.average_ticket_size_rupees,
+        gateway=req.gateway,
+        industry=req.industry,
+    )
 
