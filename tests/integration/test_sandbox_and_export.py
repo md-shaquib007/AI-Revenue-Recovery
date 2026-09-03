@@ -127,3 +127,52 @@ async def test_dpdp_customer_erasure_endpoint():
         assert data["opted_out"] is True
         assert "name" in data["pii_scrubbed"]
 
+
+@pytest.mark.asyncio
+async def test_customer_self_service_portal_flow():
+    """Validates public /pay/{case_id} HTML portal and customer action choices."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # 1. Trigger payment failure
+        await client.post(
+            "/api/v1/webhooks/simulate",
+            json={
+                "event": "payment.failed",
+                "event_id": "evt_selfserve_999",
+                "payload": {
+                    "payment": {
+                        "entity": {
+                            "id": "pay_selfserve_999",
+                            "amount": 1000000,
+                            "currency": "INR",
+                            "status": "failed",
+                            "error_code": "BAD_REQUEST_PAYMENT_TIMED_OUT",
+                            "bank": "HDFC",
+                            "email": "selfserve@example.com",
+                            "contact": "+919876543210",
+                            "created_at": 1725350000,
+                        }
+                    }
+                }
+            },
+        )
+        cases_res = await client.get("/api/v1/recovery/cases")
+        assert cases_res.status_code == 200
+        case_id = cases_res.json()["cases"][0]["id"]
+
+        # 2. GET /pay/{case_id} HTML portal
+        portal_res = await client.get(f"/pay/{case_id}")
+        assert portal_res.status_code == 200
+        assert "PrimeTech Workspace" in portal_res.text
+        assert "14-Day Holiday Pause" in portal_res.text
+
+        # 3. POST 14-day pause customer action
+        act_res = await client.post(
+            f"/api/v1/recovery/cases/{case_id}/customer-action",
+            json={"action": "PAUSE_14_DAYS"},
+        )
+        assert act_res.status_code == 200
+        act_data = act_res.json()
+        assert act_data["status"] == "ACTION_RECORDED"
+        assert act_data["action"] == "PAUSE_14_DAYS"
+        assert "paused for 14 days" in act_data["message"]
+

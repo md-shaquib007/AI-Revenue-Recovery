@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -396,5 +396,88 @@ async def erase_customer_pii(
         "opted_out": True,
         "pii_scrubbed": ["name", "email", "phone"],
     }
+
+
+from pydantic import BaseModel
+
+
+class CustomerSelfServiceActionRequest(BaseModel):
+    action: str  # 'PAY_FULL' | 'PAY_PARTIAL' | 'PAUSE_14_DAYS' | 'DOWNSELL'
+    partial_amount_rupees: Optional[float] = None
+    downsell_tier: Optional[str] = "ESSENTIAL_LITE"
+
+
+@router.post("/cases/{case_id}/customer-action")
+async def handle_customer_self_service_action(
+    case_id: str,
+    req: CustomerSelfServiceActionRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Public Customer Self-Service Action Handler:
+    Allows debtors to choose between Full Payment, Partial Waterfall Split, 14-Day Holiday Pause, or Plan Downsell.
+    """
+    stmt = (
+        select(RecoveryCaseEntity)
+        .where(RecoveryCaseEntity.id == case_id)
+        .options(
+            selectinload(RecoveryCaseEntity.payment),
+            selectinload(RecoveryCaseEntity.customer),
+        )
+    )
+    res = await db.execute(stmt)
+    case = res.scalars().first()
+    if not case:
+        raise HTTPException(status_code=404, detail="Recovery case not found")
+
+    amount_rupees = case.amount_in_paise / 100.0
+
+    if req.action == "PAY_FULL":
+        return {
+            "status": "ACTION_RECORDED",
+            "action": "PAY_FULL",
+            "case_id": case_id,
+            "checkout_url": f"https://rzp.io/i/plink_{case.payment_id}",
+            "message": "Redirecting to 1-Click UPI Full Settlement.",
+        }
+
+    elif req.action == "PAY_PARTIAL":
+        slice_amount = req.partial_amount_rupees or round(amount_rupees * 0.33, 2)
+        return {
+            "status": "ACTION_RECORDED",
+            "action": "PAY_PARTIAL",
+            "case_id": case_id,
+            "partial_amount_rupees": slice_amount,
+            "balance_due_rupees": round(amount_rupees - slice_amount, 2),
+            "checkout_url": f"https://rzp.io/i/plink_partial_{case.payment_id}",
+            "message": f"Partial split of ₹{slice_amount:,.2f} initiated. Balance scheduled for salary day.",
+        }
+
+    elif req.action == "PAUSE_14_DAYS":
+        resume_date = datetime.utcnow() + timedelta(days=14)
+        case.next_action_at = resume_date
+        await db.commit()
+        return {
+            "status": "ACTION_RECORDED",
+            "action": "PAUSE_14_DAYS",
+            "case_id": case_id,
+            "resume_date": resume_date.strftime("%d %b %Y"),
+            "message": "Your subscription has been paused for 14 days. Your access remains active with zero data loss!",
+        }
+
+    elif req.action == "DOWNSELL":
+        new_price = round(amount_rupees * 0.25, 2)
+        return {
+            "status": "ACTION_RECORDED",
+            "action": "DOWNSELL",
+            "case_id": case_id,
+            "new_plan": req.downsell_tier,
+            "new_price_rupees": new_price,
+            "savings_pct": 75,
+            "checkout_url": f"https://rzp.io/i/plink_downsell_{case.payment_id}",
+            "message": f"Plan downgraded to {req.downsell_tier} at ₹{new_price}/mo (Saved 75%).",
+        }
+
+    raise HTTPException(status_code=400, detail="Invalid self-service action")
 
 

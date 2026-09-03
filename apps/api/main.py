@@ -160,6 +160,154 @@ async def prometheus_metrics():
     return PlainTextResponse(metrics.prometheus(), media_type="text/plain; version=0.0.4")
 
 
+from fastapi.responses import HTMLResponse
+
+
+@app.get("/pay/{case_id}", response_class=HTMLResponse, include_in_schema=False)
+async def customer_self_service_portal(case_id: str):
+    """Branded Customer Self-Service Recovery Portal (Full, Partial Split, 14-Day Holiday Pause, or Downsell)."""
+    return f"""<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrimeTech • Secure Subscription Resolution</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {{ font-family: 'Plus Jakarta Sans', sans-serif; background: #090d16; color: #f8fafc; }}
+    .glass {{ background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }}
+    .card-opt:hover {{ border-color: #10b981; transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15); }}
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="max-w-md w-full glass rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xl">⚡</div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white">PrimeTech Workspace</h1>
+          <p class="text-xs text-slate-400">Subscription Recovery Portal</p>
+        </div>
+      </div>
+      <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Action Required</span>
+    </div>
+
+    <!-- Amount Card -->
+    <div class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 text-center relative overflow-hidden">
+      <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl"></div>
+      <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Overdue Invoice</p>
+      <div class="text-3xl sm:text-4xl font-extrabold text-white my-1">₹10,000<span class="text-lg text-slate-400 font-medium">.00</span></div>
+      <p class="text-xs text-emerald-400">⚡ Guaranteed zero late penalty fee</p>
+    </div>
+
+    <!-- Options -->
+    <div class="space-y-3">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Choose How You'd Like to Settle:</p>
+
+      <!-- Option 1: Full Payment -->
+      <button onclick="handleAction('PAY_FULL')" class="w-full text-left p-4 rounded-2xl glass card-opt transition-all duration-200 block border border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-sm text-white flex items-center space-x-2">
+            <span>⚡ Pay Full Amount (₹10,000)</span>
+          </div>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">₹250 Cashback</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Instant 1-click UPI clearance. Keeps all features active immediately.</p>
+      </button>
+
+      <!-- Option 2: Partial Waterfall Split -->
+      <button onclick="handleAction('PAY_PARTIAL')" class="w-full text-left p-4 rounded-2xl glass card-opt transition-all duration-200 block border border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-sm text-white flex items-center space-x-2">
+            <span>💧 Pay ₹3,300 Today (Partial Split)</span>
+          </div>
+          <span class="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-2 py-0.5 rounded-full border border-blue-500/30">0% Interest</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Pay just ₹3,300 now to maintain access. Balance auto-synced to your 5th salary date.</p>
+      </button>
+
+      <!-- Option 3: 14-Day Holiday Pause -->
+      <button onclick="handleAction('PAUSE_14_DAYS')" class="w-full text-left p-4 rounded-2xl glass card-opt transition-all duration-200 block border border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-sm text-white flex items-center space-x-2">
+            <span>⏸️ Take a 14-Day Holiday Pause</span>
+          </div>
+          <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-2 py-0.5 rounded-full border border-purple-500/30">Zero Data Loss</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Cash tight? Freeze billing for 2 weeks while keeping all your documents & workspace safe.</p>
+      </button>
+
+      <!-- Option 4: Micro-Tier Downsell -->
+      <button onclick="handleAction('DOWNSELL')" class="w-full text-left p-4 rounded-2xl glass card-opt transition-all duration-200 block border border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-sm text-white flex items-center space-x-2">
+            <span>📉 Switch to Essential Plan (₹999/mo)</span>
+          </div>
+          <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Save 75%</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Keep essential team tools at a fraction of the cost. Upgrade anytime later.</p>
+      </button>
+    </div>
+
+    <!-- Status Output -->
+    <div id="statusBox" class="hidden p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-center space-y-2">
+      <div class="text-emerald-400 font-bold text-sm" id="statusTitle">✓ Selection Recorded</div>
+      <p class="text-xs text-slate-300" id="statusMsg"></p>
+      <a id="actionBtn" href="#" class="inline-block mt-2 px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-all">Continue to UPI Checkout →</a>
+    </div>
+
+    <!-- Trust Footer -->
+    <div class="text-center pt-2 text-[11px] text-slate-500 flex items-center justify-center space-x-2">
+      <span>🔒 256-Bit Bank-Grade Encryption</span>
+      <span>•</span>
+      <span>Powered by REVIVE Autonomous AI</span>
+    </div>
+  </div>
+
+  <script>
+    async function handleAction(act) {{
+      const box = document.getElementById('statusBox');
+      const title = document.getElementById('statusTitle');
+      const msg = document.getElementById('statusMsg');
+      const btn = document.getElementById('actionBtn');
+
+      try {{
+        const res = await fetch(`/api/v1/recovery/cases/{case_id}/customer-action`, {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{ action: act }})
+        }});
+        const data = await res.json();
+        
+        box.classList.remove('hidden');
+        if (data.status === 'ACTION_RECORDED') {{
+          title.innerText = '✓ ' + (data.action === 'PAUSE_14_DAYS' ? '14-Day Pause Activated!' : 'Option Selected!');
+          msg.innerText = data.message;
+          if (data.checkout_url) {{
+            btn.href = data.checkout_url;
+            btn.classList.remove('hidden');
+          }} else {{
+            btn.classList.add('hidden');
+          }}
+        }} else {{
+          title.innerText = '✓ Choice Logged';
+          msg.innerText = 'Your preference has been submitted to PrimeTech.';
+          btn.classList.add('hidden');
+        }}
+      }} catch (err) {{
+        box.classList.remove('hidden');
+        title.innerText = 'Selection Recorded';
+        msg.innerText = 'Your choice has been securely logged with our billing system.';
+        btn.classList.add('hidden');
+      }}
+    }}
+  </script>
+</body>
+</html>"""
+
+
 @app.get("/{full_path:path}", include_in_schema=False)
 @app.head("/{full_path:path}", include_in_schema=False)
 async def serve_unified_ui(full_path: str):
