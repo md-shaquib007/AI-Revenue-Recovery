@@ -46,23 +46,23 @@ class MultiDimensionalRecoveryScorer:
         projected_ltv = monthly_plan_value * 12.0
 
         # 6. Expected Net Value (EV) Calculations across Strategies
-        # Strategy A: Hard Retry / Demand Full
-        ev_demand_full = (p_pay_now * amount_rupees) + ((1.0 - p_churn_risk * 1.5) * projected_ltv * 0.10)
+        # Strategy A: Hard Retry / Demand Full (100% Plan Value, but higher churn penalty)
+        ev_demand_full = (p_pay_now * amount_rupees) + ((1.0 - p_churn_risk * 1.5) * projected_ltv * 0.80)
 
-        # Strategy B: Partial Waterfall Slicing (33% slice + salary sync) - Guardrail: Only for amounts >= ₹500
+        # Strategy B: Partial Waterfall Slicing (100% Total Invoice Recovered over 2 slices, High Retention 0.95x)
         if amount_rupees >= 500.0:
             ev_partial_waterfall = (
                 (p_accept_partial * (amount_rupees * 0.33))
                 + (p_pay_salary * (amount_rupees * 0.67))
-                + ((1.0 - p_churn_risk * 0.4) * projected_ltv * 0.10)
+                + ((1.0 - p_churn_risk * 0.3) * projected_ltv * 0.95)
             )
         else:
             ev_partial_waterfall = 0.0  # Guardrail: Micro-amounts below ₹500 cannot be sliced due to gateway minimums
 
-        # Strategy C: 14-Day Smart Holiday Pause
-        ev_holiday_pause = (1.0 - p_churn_risk * 0.2) * projected_ltv * 0.08
+        # Strategy C: 14-Day Smart Holiday Pause (0.85x LTV Retention)
+        ev_holiday_pause = (1.0 - p_churn_risk * 0.2) * projected_ltv * 0.85
 
-        # Strategy D: Micro-Tier Downsell (75% discount)
+        # Strategy D: Micro-Tier Downsell (75% discount -> 0.25x Plan Value & 0.25x LTV)
         ev_downsell = (amount_rupees * 0.25) + ((1.0 - p_churn_risk * 0.1) * (projected_ltv * 0.25))
 
         # Determine Optimal Strategy by maximum EV

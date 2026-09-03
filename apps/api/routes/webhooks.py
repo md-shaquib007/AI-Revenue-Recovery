@@ -51,6 +51,7 @@ async def simulate_webhook_event(
 
 
 @router.post("/razorpay", status_code=status.HTTP_200_OK)
+@router.post("/ingest", status_code=status.HTTP_200_OK)
 async def handle_razorpay_webhook(
     request: Request,
     x_razorpay_signature: str | None = Header(default=None),
