@@ -25,9 +25,11 @@ from domain.models.entities import RecoveryCaseEntity
 from domain.models.enums import CustomerTier, FailureCode, PaymentMethod, PaymentStatus, RecoveryState
 from domain.models.schemas import CustomerSchema, PaymentSchema
 from services.bank_resolver import infer_bank_key
+from services.churn_rescue import churn_rescue_engine
 from services.db import get_db
 from services.event_bus import event_bus
 from services.fatigue import timestamps_as_datetimes
+from services.voice_agent import voice_agent_service
 
 router = APIRouter(prefix="/intel", tags=["Intelligence"])
 
@@ -568,4 +570,82 @@ async def simulate_sandbox_scenario(
         "whatsapp_preview": wa_payload,
         "copy_rag_matched": rag_match,
     }
+
+
+class VoiceCallSimulationRequest(BaseModel):
+    customer_name: str = "Rahul Sharma"
+    customer_phone: str = "+919876543210"
+    amount_in_rupees: float = 10000.0
+    language: str = "hinglish"  # 'hinglish' | 'english'
+    tier: str = "STANDARD"
+
+
+class ChurnRescueRequest(BaseModel):
+    customer_name: str = "Priya Patel"
+    tier: str = "VIP"
+    amount_in_rupees: float = 4999.0
+    consecutive_failures: int = 2
+
+
+@router.post("/voice-call/simulate")
+async def simulate_voice_ai_call(
+    req: VoiceCallSimulationRequest,
+    _: OperatorContext = Depends(require_operator),
+):
+    """
+    Simulates a futuristic bilingual Conversational Voice AI Debt Concierge call.
+    Negotiates dynamic partial waterfall settlements with debtors in Hindi/English.
+    """
+    customer = CustomerSchema(
+        id=f"cust_{hash(req.customer_phone)}",
+        name=req.customer_name,
+        email=f"{req.customer_name.lower().replace(' ', '.')}@example.com",
+        phone=req.customer_phone,
+        tier=CustomerTier(req.tier) if req.tier in CustomerTier._value2member_map_ else CustomerTier.STANDARD,
+    )
+    payment = PaymentSchema(
+        id=f"pay_vcall_{int(datetime.utcnow().timestamp())}",
+        customer_id=customer.id,
+        amount_in_paise=int(req.amount_in_rupees * 100),
+        currency="INR",
+        status=PaymentStatus.FAILED,
+        failure_code=FailureCode.INSUFFICIENT_FUNDS,
+        created_at=datetime.utcnow(),
+    )
+    return voice_agent_service.generate_call_simulation(
+        customer=customer,
+        payment=payment,
+        language=req.language,
+    )
+
+
+@router.post("/churn-rescue/evaluate")
+async def evaluate_churn_rescue(
+    req: ChurnRescueRequest,
+    _: OperatorContext = Depends(require_operator),
+):
+    """
+    Evaluates Autonomous Churn Rescue strategies: Dynamic 14-day holiday pauses & plan downsells
+    to retain 100% of customer relationships during cash flow hardship.
+    """
+    customer = CustomerSchema(
+        id=f"cust_{hash(req.customer_name)}",
+        name=req.customer_name,
+        email=f"{req.customer_name.lower().replace(' ', '.')}@example.com",
+        tier=CustomerTier(req.tier) if req.tier in CustomerTier._value2member_map_ else CustomerTier.STANDARD,
+    )
+    payment = PaymentSchema(
+        id=f"pay_rescue_{int(datetime.utcnow().timestamp())}",
+        customer_id=customer.id,
+        amount_in_paise=int(req.amount_in_rupees * 100),
+        currency="INR",
+        status=PaymentStatus.FAILED,
+        failure_code=FailureCode.INSUFFICIENT_FUNDS,
+        created_at=datetime.utcnow(),
+    )
+    return churn_rescue_engine.evaluate_rescue_strategy(
+        customer=customer,
+        payment=payment,
+        consecutive_failures=req.consecutive_failures,
+    )
 
