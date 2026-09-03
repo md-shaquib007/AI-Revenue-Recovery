@@ -134,6 +134,11 @@ class OperatorTokenResponse(BaseModel):
     role: str
 
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+
 class RecoveryCaseSchema(BaseModel):
     id: str
     payment_id: str

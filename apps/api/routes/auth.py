@@ -6,12 +6,13 @@ from apps.api.auth import (
     OperatorContext,
     bootstrap_default_operator,
     create_access_token,
+    hash_password,
     require_operator,
     verify_password,
 )
 from apps.api.settings import get_settings
 from domain.models.entities import OperatorEntity
-from domain.models.schemas import OperatorLoginRequest, OperatorTokenResponse
+from domain.models.schemas import ChangePasswordRequest, OperatorLoginRequest, OperatorTokenResponse
 from services.db import get_db
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -37,3 +38,22 @@ async def me(operator: OperatorContext = Depends(require_operator)):
         "role": operator.role,
         "auth_required": settings.require_auth,
     }
+
+
+@router.post("/change-password")
+async def change_password(
+    body: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    operator: OperatorContext = Depends(require_operator),
+):
+    result = await db.execute(select(OperatorEntity).where(OperatorEntity.id == operator.id))
+    op = result.scalars().first()
+    if not op or not verify_password(body.old_password, op.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
+
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New password must be at least 6 characters long")
+
+    op.password_hash = hash_password(body.new_password)
+    await db.commit()
+    return {"status": "SUCCESS", "message": "Operator password updated successfully"}
