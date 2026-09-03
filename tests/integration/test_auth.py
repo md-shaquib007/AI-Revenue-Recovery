@@ -59,14 +59,38 @@ async def test_change_password_roundtrip():
         assert change.status_code == 200
         assert change.json()["status"] == "SUCCESS"
 
-        # Login with new password
-        new_login = await client.post("/api/v1/auth/login", json={"username": "ops", "password": "new-secure-pass-2026"})
-        assert new_login.status_code == 200
-
-        # Reset back to default for other tests
-        new_token = new_login.json()["access_token"]
-        await client.post(
+        # Reset password back
+        reset_change = await client.post(
             "/api/v1/auth/change-password",
             json={"old_password": "new-secure-pass-2026", "new_password": "revive-ops-2026"},
-            headers={"Authorization": f"Bearer {new_token}"},
+            headers=headers,
         )
+        assert reset_change.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_all_five_rbac_roles_login_and_scopes():
+    """Validates that all 5 least-privilege enterprise RBAC roles can log in and receive their scopes."""
+    roles_to_test = [
+        ("ops", "revive-ops-2026", "admin"),
+        ("admin", "revive-admin-2026", "admin"),
+        ("risk_admin", "revive-risk-2026", "risk_admin"),
+        ("operator", "revive-op-2026", "operator"),
+        ("auditor", "revive-audit-2026", "auditor"),
+        ("viewer", "revive-view-2026", "viewer"),
+    ]
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        for username, password, expected_role in roles_to_test:
+            res = await client.post("/api/v1/auth/login", json={"username": username, "password": password})
+            assert res.status_code == 200
+            data = res.json()
+            assert data["username"] == username
+            assert data["role"] == expected_role
+            assert "access_token" in data
+
+            # Verify /me endpoint returns exact role
+            me_res = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {data['access_token']}"})
+            assert me_res.status_code == 200
+            assert me_res.json()["role"] == expected_role

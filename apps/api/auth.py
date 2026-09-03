@@ -61,18 +61,28 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token") from exc
 
 
+DEFAULT_RBAC_USERS = [
+    ("ops", "revive-ops-2026", "admin"),
+    ("admin", "revive-admin-2026", "admin"),
+    ("risk_admin", "revive-risk-2026", "risk_admin"),
+    ("operator", "revive-op-2026", "operator"),
+    ("auditor", "revive-audit-2026", "auditor"),
+    ("viewer", "revive-view-2026", "viewer"),
+]
+
+
 async def bootstrap_default_operator(db: AsyncSession) -> None:
-    settings = get_settings()
-    result = await db.execute(select(OperatorEntity).where(OperatorEntity.username == settings.operator_username))
-    existing = result.scalars().first()
-    if existing:
-        return
-    operator = OperatorEntity(
-        username=settings.operator_username,
-        password_hash=hash_password(settings.operator_password),
-        role=settings.operator_role,
-    )
-    db.add(operator)
+    """Provisions default operators for all 5 least-privilege enterprise RBAC roles."""
+    for uname, raw_pass, role in DEFAULT_RBAC_USERS:
+        result = await db.execute(select(OperatorEntity).where(OperatorEntity.username == uname))
+        existing = result.scalars().first()
+        if not existing:
+            operator = OperatorEntity(
+                username=uname,
+                password_hash=hash_password(raw_pass),
+                role=role,
+            )
+            db.add(operator)
     await db.flush()
 
 
