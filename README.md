@@ -3,7 +3,7 @@
 <div align="center">
 
 <p align="center">
-  <img src="assets/images/command_center.jpg" alt="REVIVE Mission Control" width="100%" style="border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); border: 1px solid #1e293b;" />
+  <img src="assets/images/command_center.jpg" alt="REVIVE Mission Control Command Center" width="100%" style="border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); border: 1px solid #1e293b;" />
 </p>
 
 [![Tests](https://img.shields.io/badge/PyTest-75%2F75%20Passing-success.svg?style=for-the-badge&logo=pytest&logoColor=white)](#)
@@ -12,11 +12,11 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon%20Serverless-00e599.svg?style=for-the-badge&logo=postgresql&logoColor=white)](#)
 [![Security](https://img.shields.io/badge/Compliance-SOC2%20%7C%20DPDP%20Act%202023-blueviolet.svg?style=for-the-badge)](#)
 
-### **Event-Driven, Financially-Safe Revenue Recovery for Razorpay Subscriptions**
+### **An Empathetic, Event-Driven, Financially-Safe Revenue Recovery Platform for Razorpay Subscriptions**
 
 > **Core Axiom:** *"AI proposes. Policy decides. Systems execute."*
 
-[Market Landscape](#-the-market-landscape--the-problem-we-solve) • [Comparison](#-head-to-head-market-comparison) • [Live Tour](#-visual-app-tour) • [Architecture](#-how-it-works-under-the-hood) • [Quick Start](#-quick-start-in-2-minutes) • [API Reference](#-api-endpoints) • [Benchmarks](#-reproducible-benchmarks)
+[The Human Story](#-the-human-side-of-payment-recovery) • [Market Landscape](#-the-market-landscape--the-problem-we-solve) • [Comparison](#-head-to-head-market-comparison) • [Visual Tour](#-visual-app-tour) • [Architecture](#-how-it-works-under-the-hood) • [Quick Start](#-quick-start-in-2-minutes) • [Ground Reality](#-ground-reality-why-100-recovery-is-impossible)
 
 </div>
 
@@ -24,9 +24,36 @@
 
 ## 💡 What is REVIVE?
 
-Every year, subscription businesses lose **15% to 20% of recurring revenue** to involuntary payment failures — bank 3DS dropouts, core banking downtime, expired cards, and temporary balance dips.
+Behind every failed recurring payment is a real human being whose day is disrupted:
+- A student losing access to their exam prep subscription during revision week because their bank SMS OTP was delayed by 30 seconds.
+- A family getting locked out of their streaming service on Friday movie night.
+- A growing business losing access to its CRM during a critical client pitch.
+- A founder losing 15% to 20% of hard-earned recurring revenue to technical banking dropouts rather than actual product dissatisfaction.
 
-**REVIVE** is an autonomous AI revenue recovery agent for Razorpay subscriptions that diagnoses payment failures in sub-2ms, simulates customer behavior across 50 prospective personas, and recovers addressable failed revenue with **smart 120s grace periods, deterministic policy guardrails, and cryptographic tamper-evident auditability**.
+Traditional recovery tools treat these humans as cold rows in a database — spamming them with aggressive collection emails and firing blind automated retries that lock credit cards and burn customer trust.
+
+**REVIVE** reimagines revenue recovery with **financial intelligence and human empathy**. It diagnoses technical failures in sub-2ms, simulates customer friction across 50 synthetic personas, and recovers addressable revenue with **silent grace periods, 1-click WhatsApp UPI links, strict policy guardrails, and cryptographic auditability**.
+
+---
+
+## 🤝 The Human Side of Payment Recovery
+
+We built REVIVE around the principle that **financial technology should respect human dignity**:
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   THE 4 PILLARS OF HUMAN-CENTRIC FINTECH                         │
+├────────────────────────────────┬────────────────────────────────┬────────────────────────────────┤
+│      👤 FOR THE SUBSCRIBER     │      🏢 FOR THE MERCHANT       │      🛡️ FOR OPS & GOVERNANCE    │
+├────────────────────────────────┼────────────────────────────────┼────────────────────────────────┤
+│ • Silent 120s grace period     │ • Recovers 33%+ of lost ARR    │ • ₹50k+ Safety Gate routes to  │
+│   for organic OTP retry.       │   without developer overhead.  │   human account managers.      │
+│ • No aggressive dunning spam.  │ • Protects customer lifetime   │ • Cryptographic SHA-256 Merkle │
+│ • 1-click WhatsApp UPI payment │   value (LTV) and brand trust. │   chains for SOC2 audits.      │
+│   on pay-day cycles.           │ • Zero penalty fees from blind │ • Automated Section 12 PII     │
+│ • 100% opt-out respect.        │   failed gateway retries.      │   erasure under DPDP Act 2023. │
+└────────────────────────────────┴────────────────────────────────┴────────────────────────────────┘
+```
 
 ---
 
@@ -144,52 +171,6 @@ Live interactive stress-testing suite:
 
 ---
 
-## ⚡ Quick Start (In 2 Minutes)
-
-### Prerequisites
-- Python 3.11+ & Node.js 18+
-
-### 1. Start Backend (FastAPI)
-```bash
-# Activate virtual environment
-./venv/Scripts/activate
-
-# Start API Server on port 8000
-uvicorn apps.api.main:app --port 8000 --reload
-```
-> API Docs live at: `http://localhost:8000/docs`
-
-### 2. Start Frontend (Next.js)
-```bash
-cd apps/web
-npm install
-npm run dev
-```
-> Command Center live at: `http://localhost:3000`  
-> Operator Credentials: **`ops`** / **`revive-ops-2026`**
-
-### 3. Run Test Suite (75 Tests Passing)
-```bash
-./venv/Scripts/pytest -v
-```
-
----
-
-## 📊 Reproducible Benchmarks (`seed=42`)
-
-Simulated across 500 enterprise customers and 2,000 transaction failure events:
-
-| Metric | Legacy Default Dunning | REVIVE Autonomous Agent | Measured Impact |
-| :--- | :---: | :---: | :---: |
-| **Total Revenue Recovered** | ₹1,82,400 | **₹2,84,900** | **+₹1,02,500 (+56.2% Lift)** |
-| **Net Recovery Rate** | 21.4% | **33.8%** | **+12.4% Conversion Boost** |
-| **Customer Spam Nudges** | 1,840 | **0** | **1,840 Spam Pings Saved** |
-| **Policy Violations** | 412 | **0** | **100% Policy Compliance** |
-| **Average Settlement Time** | 36.2 hours | **4.1 hours** | **88.6% Faster Recovery** |
-| **Automated Tests** | — | **75 / 75 PASSED** | **100% Green Verification** |
-
----
-
 ## 🇮🇳 Ground Reality: Why 100% Recovery is Impossible (and What REVIVE Actually Recovers)
 
 In recurring subscription systems, **claiming 100% recovery is a mathematical and operational impossibility**. Real-world payment failures split into two distinct categories:
@@ -227,6 +208,52 @@ In recurring subscription systems, **claiming 100% recovery is a mathematical an
 3. **Core Banking Outage Protection (Nightly Maintenance Windows):**
    - Major Indian public & private banks run scheduled batch maintenance between 12:00 AM and 3:00 AM IST.
    - Retrying during this window guarantees failure and depletes the merchant's 3-retry subscription cap. The **Bank Sentinel ($\frac{dF}{dt}$)** holds retries until morning send windows (9:00 AM – 8:00 PM IST).
+
+---
+
+## 📊 Reproducible Benchmarks (`seed=42`)
+
+Simulated across 500 enterprise customers and 2,000 transaction failure events:
+
+| Metric | Legacy Default Dunning | REVIVE Autonomous Agent | Measured Impact |
+| :--- | :---: | :---: | :---: |
+| **Total Revenue Recovered** | ₹1,82,400 | **₹2,84,900** | **+₹1,02,500 (+56.2% Lift)** |
+| **Net Recovery Rate** | 21.4% | **33.8%** | **+12.4% Conversion Boost** |
+| **Customer Spam Nudges** | 1,840 | **0** | **1,840 Spam Pings Saved** |
+| **Policy Violations** | 412 | **0** | **100% Policy Compliance** |
+| **Average Settlement Time** | 36.2 hours | **4.1 hours** | **88.6% Faster Recovery** |
+| **Automated Tests** | — | **75 / 75 PASSED** | **100% Green Verification** |
+
+---
+
+## ⚡ Quick Start (In 2 Minutes)
+
+### Prerequisites
+- Python 3.11+ & Node.js 18+
+
+### 1. Start Backend (FastAPI)
+```bash
+# Activate virtual environment
+./venv/Scripts/activate
+
+# Start API Server on port 8000
+uvicorn apps.api.main:app --port 8000 --reload
+```
+> API Docs live at: `http://localhost:8000/docs`
+
+### 2. Start Frontend (Next.js)
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+> Command Center live at: `http://localhost:3000`  
+> Operator Credentials: **`ops`** / **`revive-ops-2026`**
+
+### 3. Run Test Suite (75 Tests Passing)
+```bash
+./venv/Scripts/pytest -v
+```
 
 ---
 
