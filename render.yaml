@@ -1,0 +1,66 @@
+services:
+  # ---------------------------------------------------------------------------
+  # 1. REVIVE FastAPI Backend API Web Service
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: revive-api
+    runtime: python
+    region: singapore
+    plan: free
+    branch: main
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_NAME
+        value: REVIVE
+      - key: APP_VERSION
+        value: 2.1.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: RAZORPAY_ENABLE_LIVE_API
+        value: "false"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://litellm-platform.penpencil.guru
+      - key: OPENAI_MODEL
+        value: vertex_ai/gemini-3.5-flash
+      - key: WORKER_ENABLED
+        value: "true"
+      - key: CORS_ORIGINS
+        value: "*"
+
+  # ---------------------------------------------------------------------------
+  # 2. REVIVE Next.js 14 Web Command Center
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: revive-web
+    runtime: node
+    region: singapore
+    plan: free
+    branch: main
+    rootDir: apps/web
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: revive-api
+          property: host
+        transform: "https://${host}/api/v1"
+      - key: NODE_ENV
+        value: production
