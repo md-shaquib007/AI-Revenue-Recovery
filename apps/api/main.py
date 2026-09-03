@@ -132,7 +132,11 @@ if os.path.exists(_NEXT_STATIC_DIR):
     app.mount("/_next", StaticFiles(directory=_NEXT_STATIC_DIR), name="next_static")
 
 
+from services.metrics import metrics_collector
+
+
 @app.get("/health")
+@app.get("/healthz")
 async def healthcheck():
     return {
         "status": "healthy",
@@ -143,6 +147,7 @@ async def healthcheck():
 
 
 @app.get("/ready")
+@app.get("/readyz")
 async def readiness():
     """Enterprise Kubernetes Readiness Probe: Checks DB, Sentinel, and Worker readiness."""
     checks = {"database": "ok", "sentinel": "ok", "worker": "active" if _worker_task and not _worker_task.done() else "standby"}
@@ -157,7 +162,8 @@ async def readiness():
 
 @app.get("/metrics")
 async def prometheus_metrics():
-    return PlainTextResponse(metrics.prometheus(), media_type="text/plain; version=0.0.4")
+    """Exposes standard Prometheus & OpenTelemetry metrics for Grafana/Datadog."""
+    return PlainTextResponse(metrics_collector.generate_metrics_text(), media_type="text/plain; version=0.0.4")
 
 
 from fastapi.responses import HTMLResponse
