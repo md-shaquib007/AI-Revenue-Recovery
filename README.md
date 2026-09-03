@@ -16,7 +16,7 @@
 
 > **Core Axiom:** *"AI proposes. Policy decides. Systems execute."*
 
-[Live Tour](#-visual-app-tour) • [Architecture](#-how-it-works-under-the-hood) • [Quick Start](#-quick-start-in-2-minutes) • [API Reference](#-api-endpoints) • [Benchmarks](#-reproducible-benchmarks)
+[Market Landscape](#-the-market-landscape--the-problem-we-solve) • [Comparison](#-head-to-head-market-comparison) • [Live Tour](#-visual-app-tour) • [Architecture](#-how-it-works-under-the-hood) • [Quick Start](#-quick-start-in-2-minutes) • [API Reference](#-api-endpoints) • [Benchmarks](#-reproducible-benchmarks)
 
 </div>
 
@@ -24,11 +24,63 @@
 
 ## 💡 What is REVIVE?
 
-Every year, subscription merchants lose **15% to 20% of recurring revenue** to transient payment failures — bank 3DS dropouts, temporary balance dips, and gateway downtimes.
+Every year, subscription businesses lose **15% to 20% of recurring revenue** to involuntary payment failures — bank 3DS dropouts, core banking downtime, expired cards, and temporary balance dips.
 
-Traditional dunning tools spam customers with blind retries that burn subscription caps and trigger customer churn.
+**REVIVE** is an autonomous AI revenue recovery agent for Razorpay subscriptions that diagnoses payment failures in sub-2ms, simulates customer behavior across 50 prospective personas, and recovers revenue with **zero spam, zero policy violations, and 100% cryptographic auditability**.
 
-**REVIVE** is an autonomous AI revenue recovery agent that diagnoses payment failures in sub-2ms, simulates customer behavior across 50 prospective personas, and recovers revenue with **zero spam, zero policy violations, and 100% cryptographic auditability**.
+---
+
+## 🌍 The Market Landscape & The Problem We Solve
+
+### ❌ The Status Quo (What Existing Tools Do Today)
+Most payment gateways (Razorpay default dunning, Stripe Smart Retries, Chargebee, Recurly) treat failed payments with naive, one-size-fits-all automation:
+
+1. **Blind Time-Based Retries:** They retry failed charges at fixed intervals (e.g., +12h, +24h, +48h) regardless of *why* the payment failed. Retrying an expired card or an insufficient balance immediately fails 100% of the time.
+2. **Zero Core Banking Awareness:** They blindly fire retry attempts while HDFC, SBI, or ICICI core banking servers are down for nightly maintenance (12:00 AM – 3:00 AM IST), burning the merchant's 3-retry subscription limit.
+3. **Email-Only Dunning in a Mobile-First India:** They send generic billing emails that get buried in spam folders (12–18% open rate) instead of meeting Indian consumers where they transact: **WhatsApp & UPI**.
+4. **False Alarm Spamming:** They blast customers immediately on 3DS OTP delays, even though **~30% of users retry on their own within 120 seconds**.
+5. **No VIP Governance:** They treat a ₹75,000 annual enterprise invoice with the same automated bot spam as a ₹199 consumer plan, risking enterprise client relationships.
+6. **Regulatory Non-Compliance:** Zero automated compliance with the **India DPDP Act 2023** (Section 12 Right-to-Erasure) or cryptographic SOC2 auditability.
+
+---
+
+### ✅ What REVIVE Does Differently (The Paradigm Shift)
+
+REVIVE introduces an **Agentic Financial Policy-Gated Architecture** specifically engineered for the Indian payment ecosystem:
+
+```
+                      ┌────────────────────────────────────────────────────────┐
+                      │              CURRENT MARKET vs. REVIVE                 │
+                      └───────────────────────────┬────────────────────────────┘
+                                                  │
+ ┌────────────────────────────────────────┐       │       ┌────────────────────────────────────────┐
+ │           TRADITIONAL DUNNING          │       │       │        REVIVE AUTONOMOUS AGENT         │
+ ├────────────────────────────────────────┤       │       ├────────────────────────────────────────┤
+ │ • Blind static retry clocks (+24h)     │       │       │ • 50-Persona Multi-Agent Shadow Sim    │
+ │ • Ignores bank outages (burned caps)   │◄──────┼──────►│ • Predictive Bank Sentinel (dF/dt)    │
+ │ • Low-conversion generic emails (15%)  │       │       │ • WhatsApp 1-Click UPI Deep Links(64%) │
+ │ • Immediate spam on OTP delays         │       │       │ • Silent 120s Grace Period Window      │
+ │ • No high-value invoice governance     │       │       │ • ₹50,000 Safety Gate ➔ Human Ops Queue│
+ │ • Unverifiable, mutable database logs  │       │       │ • Cryptographic SHA-256 Merkle Ledger  │
+ └────────────────────────────────────────┘       │       └────────────────────────────────────────┘
+```
+
+---
+
+## 🏆 Head-to-Head Market Comparison
+
+| Capability | Razorpay / Stripe Defaults | Chargebee / Recurly | REVIVE Autonomous Agent |
+| :--- | :---: | :---: | :---: |
+| **Failure Diagnosis** | Simple error code lookup | Static rule engine | **Sub-2ms Multi-Factor AI Reasoner** |
+| **Behavioral Simulation** | ❌ None | ❌ None | **50-Persona Synthetic Shadow Matrix** |
+| **Bank Outage Telemetry** | ❌ None | ❌ None | **Predictive Sentinel Velocity ($\frac{dF}{dt}$)** |
+| **Recovery Channel** | Email Only (~15% conv.) | Email + SMS (~18% conv.) | **WhatsApp 1-Click NPCI UPI Deep Link (60–64%)** |
+| **OTP Delay Handling** | Instant Spam Email | Instant Spam SMS | **Silent 120s `IN_GRACE_WINDOW` (Zero Spam)** |
+| **High-Value Governance** | ❌ Automated (Risky) | ❌ Automated (Risky) | **₹50k+ Safety Gate ➔ Human Ops Queue** |
+| **Learning Algorithm** | Static Rules | Basic ML Retry | **Recency-Decayed Thompson Sampling Bandit** |
+| **Dynamic Incentives** | ❌ None | ❌ None | **Net EV-Positive Micro-Discount Engine** |
+| **India DPDP Act 2023** | Manual DB Scripts | Manual Request Forms | **Automated `/erase-pii` REST API** |
+| **Audit Verification** | Mutable SQL Logs | Basic Audit Trail | **Immutable SHA-256 Merkle Chain Certificate** |
 
 ---
 
