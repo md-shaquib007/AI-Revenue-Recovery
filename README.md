@@ -2,518 +2,165 @@
 
 <div align="center">
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](#)
-[![Tests](https://img.shields.io/badge/tests-75%2F75%20passing-success.svg?style=flat-square)](#)
-[![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue.svg?style=flat-square)](#)
-[![Next.js](https://img.shields.io/badge/Next.js-14.2%20(App%20Router)-black.svg?style=flat-square)](#)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat-square)](#)
-[![Database](https://img.shields.io/badge/PostgreSQL-Neon%20Serverless-00e599.svg?style=flat-square)](#)
-[![Security](https://img.shields.io/badge/Security-OWASP%20Hardened-orange.svg?style=flat-square)](#)
-[![Compliance](https://img.shields.io/badge/Compliance-India%20DPDP%20Act%202023-blueviolet.svg?style=flat-square)](#)
+<p align="center">
+  <img src="assets/images/command_center.jpg" alt="REVIVE Mission Control" width="100%" style="border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); border: 1px solid #1e293b;" />
+</p>
 
-**An Event-Driven, Financially-Safe, Autonomous Revenue Recovery Platform for Razorpay Subscriptions & Recurring Payments.**
+[![Tests](https://img.shields.io/badge/PyTest-75%2F75%20Passing-success.svg?style=for-the-badge&logo=pytest&logoColor=white)](#)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2%20App%20Router-black.svg?style=for-the-badge&logo=next.js&logoColor=white)](#)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](#)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon%20Serverless-00e599.svg?style=for-the-badge&logo=postgresql&logoColor=white)](#)
+[![Security](https://img.shields.io/badge/Compliance-SOC2%20%7C%20DPDP%20Act%202023-blueviolet.svg?style=for-the-badge)](#)
+
+### **Event-Driven, Financially-Safe Revenue Recovery for Razorpay Subscriptions**
 
 > **Core Axiom:** *"AI proposes. Policy decides. Systems execute."*
 
-[Features](#-key-features--breakthroughs) • [Architecture](#-system-architecture) • [Directory Structure](#-project-structure) • [Quick Start](#-quick-start-guide) • [Configuration](#-environment-variables) • [Deployment](#-deployment-guide) • [API Docs](#-api-endpoints-reference) • [Benchmarks](#-reproducible-benchmarks)
-
-<br/><br/>
-
-<p align="center">
-  <img src="assets/images/command_center.jpg" alt="REVIVE Command Center" width="100%" />
-</p>
+[Live Tour](#-visual-app-tour) • [Architecture](#-how-it-works-under-the-hood) • [Quick Start](#-quick-start-in-2-minutes) • [API Reference](#-api-endpoints) • [Benchmarks](#-reproducible-benchmarks)
 
 </div>
 
 ---
 
-## 📖 Table of Contents
-- [Executive Overview](#-executive-overview)
-- [Key Features & Breakthroughs](#-key-features--breakthroughs)
-- [System Architecture](#-system-architecture)
-- [Project Directory Structure](#-project-structure)
-- [Tech Stack](#-tech-stack)
-- [Environment Variables](#-environment-variables)
-- [Quick Start Guide](#-quick-start-guide)
-  - [1. Backend Setup](#1-backend-setup-fastapi)
-  - [2. Frontend Setup](#2-frontend-setup-nextjs)
-  - [3. Run Full Test Suite](#3-automated-test-suite-75-tests)
-  - [4. Dev-Mode End-to-End Test](#4-dev-mode-end-to-end-live-test)
-- [Hosting & Deployment](#-deployment-guide)
-  - [Frontend on Vercel](#a-frontend-deployment-on-vercel)
-  - [Backend on Render / Docker](#b-backend-deployment-on-render--docker)
-  - [Razorpay Webhook Configuration](#c-live-razorpay-webhook-setup)
-- [API Endpoints Reference](#-api-endpoints-reference)
-- [Empirical Benchmarks & Chaos Engineering](#-reproducible-benchmarks)
-- [Compliance & Security Standards](#-compliance--security-standards)
+## 💡 What is REVIVE?
+
+Every year, subscription merchants lose **15% to 20% of recurring revenue** to transient payment failures — bank 3DS dropouts, temporary balance dips, and gateway downtimes.
+
+Traditional dunning tools spam customers with blind retries that burn subscription caps and trigger customer churn.
+
+**REVIVE** is an autonomous AI revenue recovery agent that diagnoses payment failures in sub-2ms, simulates customer behavior across 50 prospective personas, and recovers revenue with **zero spam, zero policy violations, and 100% cryptographic auditability**.
 
 ---
 
-## 📌 Executive Overview
-
-In recurring payment systems (SaaS subscriptions, OTT, utility billing), **up to 15–20% of payments fail** due to transient gateway dropouts, bank outages, 3DS authentication timeouts, and non-sufficient funds (NSF). 
-
-Traditional dunning systems hammer customers with blind retry attempts and spam notifications, causing high customer churn, increased gateway penalty fees, and customer fatigue.
-
-**REVIVE** solves this with an **Agentic Financial Policy-Gated Architecture**:
-1. **AI Proposes:** Multi-factor contextual reasoning models calculate precise failure diagnoses, optimal retry timestamps, and Expected Value ($\text{EV} = P(\text{recovery}) \times \text{Amount} - \text{Friction}$).
-2. **Policy Decides:** A hard-coded deterministic **Policy Firewall** enforces 10 strict rules (48h fatigue token buckets, anti-quiet hours, KYC caps, bank circuit cool-offs, and PII masking).
-3. **Systems Execute:** Dual-layer distributed locks prevent race conditions while executing smart silent retries or generating 1-click NPCI WhatsApp UPI deep links.
-
----
-
-## 🌟 Key Features & Breakthroughs
-
-### 🧠 1. Multi-Agent Shadow Simulator (`ai/shadow_simulator.py`)
-- Runs **50 synthetic prospective customer personas** (*Salary-Day Sensitive*, *3DS Frustrated*, *VIP Enterprise*, *Midnight Shopper*) concurrently before triggering any communication.
-- Evaluates friction, timing sensitivity, and channel acceptance in $<2\text{ms}$. Auto-vetoes aggressive actions if friction index $> 45\%$.
-
-### 📡 2. Predictive Bank Outage Sentinel (`domain/bank_health/sentinel.py`)
-- Continuously monitors rolling failure velocity trendlines ($\frac{dF}{dt}$) over a sliding 3-minute window.
-- Detects emerging banking gateway outages (e.g., HDFC/SBI core banking degradation) *before* official aggregator alerts and triggers protective circuit cool-offs.
-
-### 🎲 3. Recency-Decayed Multi-Armed Bandit (`ai/bandit.py`)
-- Thompson Sampling with Beta distributions ($\text{Beta}(\alpha, \beta)$) per customer segment and failure code.
-- Features exponential recency decay ($\lambda = 0.98$) so temporary bank downtime does not permanently depress future recovery probabilities.
-
-### 💰 4. Dynamic Micro-Incentive Engine (`ai/offer_engine.py`)
-- Evaluates price elasticity for high churn-risk NSF cases and automatically authorizes margin-capped micro-discount incentives (*"Complete payment in 15 mins to get ₹50 off"*), producing a net EV lift of $+18.4\%$.
-
-### ⚡ 5. Stampede-Proof Cache Engine (`services/stamped_cache.py`)
-- **`AsyncSingleflight`** request coalescing merges 500 concurrent identical requests into 1 single database roundtrip.
-- **MIT XFetch Probabilistic Early Recomputation** prevents cache expiration stampedes across distributed workers.
-
-### 🔒 6. Dual-Layer Concurrency & Idempotency (`services/lock_manager.py`)
-- PostgreSQL Transaction-Level Advisory Locks (`pg_advisory_xact_lock`) for multi-pod Kubernetes / ECS clusters with in-process `asyncio.Lock` fallbacks.
-- Replay defense rejects duplicate Razorpay webhook IDs with sub-millisecond in-memory bloom filters.
-
-### ⚖️ 7. India DPDP Act 2023 Compliance (`apps/api/routes/recovery.py`)
-- Section 12 Right-to-Erasure API (`POST /api/v1/recovery/customers/{id}/erase-pii`) cryptographically scrubs PII (name, email, phone) while maintaining non-identifiable financial ledger consistency.
-
-### 📜 8. Cryptographic SOC2 / ISO-27001 Audit Ledger (`services/audit_ledger.py`)
-- Generates SHA-256 Merkle chain verification certificates (`GET /api/v1/recovery/cases/{id}/export`) verifying that no intermediate decision step was altered or tampered with.
-
-### 🖥️ 9. Futuristic Next.js Command Center (`apps/web`)
-- Dark-mode glassmorphic dashboard featuring **AI What-If Simulation Studio (`/sandbox`)**, **1-Click Webhook Event Simulator**, **Live Bank Velocity Radar**, **Universal Command Palette (`Ctrl+K`)**, and **Keyboard Shortcuts (`?`)**.
-
----
-
-## 🏗️ System Architecture
-
-<p align="center">
-  <img src="assets/images/architecture_diagram.jpg" alt="REVIVE Architecture Diagram" width="100%" />
-</p>
+## 🎛️ Visual App Tour
 
 <br/>
 
+### 1. 🚀 Mission Control & Live Bank Velocity Radar (`/`)
+Real-time command center tracking revenue at risk, recovered ARR, active pipeline cases, and rolling banking gateway failure velocities ($\frac{dF}{dt}$) across HDFC, SBI, ICICI, and Axis Bank.
+- **Bank Outage Sentinel:** Predicts bank outages *before* official aggregator announcements.
+- **1-Click Webhook Simulator:** Injects realistic payment events directly from the UI.
+
+---
+
+### 2. 🧪 Interactive AI What-If Simulation Studio (`/sandbox`)
+Interactive playground for operators to test recovery strategies with live parameter sliders:
+- **Real-Time Sliders:** Adjust Invoice Amount (₹500 to ₹100k), Bank Health (10% to 100%), and Churn Risk.
+- **50-Persona Shadow Simulation:** Instant consensus matrix evaluating friction before real action.
+- **Expected Value ($\text{EV}$) Curve:** Interactive mathematical comparison of standard vs. discounted recovery lift.
+- **Live WhatsApp UPI Preview:** Renders standard NPCI QR codes and 1-click payment buttons.
+
+---
+
+### 3. 📜 Cryptographic SOC2 & ISO-27001 Audit Certificates
+Every decision step is recorded in an immutable SHA-256 Merkle chain (`prev_hash` $\to$ `record_hash`):
+- **Tamper Detection:** Mathematical verification that no human or model modified the decision ledger.
+- **1-Click Export:** Download signed compliance audit certificates directly from the case trace modal.
+
+---
+
+### 4. ⚖️ India DPDP Act 2023 Right-to-Erasure API
+- Full compliance with Section 12 of the Digital Personal Data Protection Act 2023.
+- Cryptographically purges customer PII (name, email, phone) upon request while maintaining non-identifiable financial ledger integrity.
+
+---
+
+### 5. 💥 Chaos Laboratory & 50-Webhook Concurrency Blitz (`/chaos`)
+Live interactive stress-testing suite:
+- **LLM Outage Injection:** Validates seamless fallback to the sub-millisecond deterministic engine.
+- **50-Webhook Concurrency Blitz:** Fires 50 parallel requests in 200ms to demonstrate PostgreSQL transaction advisory locks (`pg_advisory_xact_lock`) with zero race conditions.
+
+---
+
+## 🏗️ How It Works (Under the Hood)
+
+<p align="center">
+  <img src="assets/images/architecture_diagram.jpg" alt="REVIVE Architecture Diagram" width="100%" style="border-radius: 12px; border: 1px solid #1e293b;" />
+</p>
+
+### The 3-Step Execution Pipeline:
+
 ```
-                    ┌────────────────────────────────────────────────────────┐
-                    │       Razorpay / Inbound Webhook (HMAC Signed)         │
-                    └───────────────────────────┬────────────────────────────┘
-                                                │
-                                                ▼
-                    ┌────────────────────────────────────────────────────────┐
-                    │        Replay Gate & Event Store (Deduplication)       │
-                    └───────────────────────────┬────────────────────────────┘
-                                                │
-                                                ▼
-                    ┌────────────────────────────────────────────────────────┐
-                    │      PostgreSQL Advisory Lock (pg_advisory_xact_lock)   │
-                    └───────────────────────────┬────────────────────────────┘
-                                                │
-                     ┌──────────────────────────┴──────────────────────────┐
-                     ▼                                                     ▼
-        ┌─────────────────────────┐                           ┌─────────────────────────┐
-        │  Redis / Strategy Cache │                           │ Singleflight Coalescing │
-        │   (<1ms In-Memory Hit)  │                           │ Context Builder (XFetch)│
-        └────────────┬────────────┘                           └────────────┬────────────┘
-                     └──────────────────────────┬──────────────────────────┘
-                                                │
-                                                ▼
-                               ┌─────────────────────────────────┐
-                               │  Predictive Bank Sentinel AI    │
-                               └────────────────┬────────────────┘
-                                                │
-                                                ▼
-                               ┌─────────────────────────────────┐
-                               │  50-Persona Shadow Simulator    │
-                               └────────────────┬────────────────┘
-                                                │
-                                                ▼
-                               ┌─────────────────────────────────┐
-                               │ Thompson Sampling Bandit Model  │
-                               └────────────────┬────────────────┘
-                                                │
-                                                ▼
-                               ┌─────────────────────────────────┐
-                               │   AI Reasoner (Expected Value)  │
-                               │   (Deterministic Fallback <1ms) │
-                               └────────────────┬────────────────┘
-                                                │
-                                                ▼
-                               ┌─────────────────────────────────┐
-                               │     POLICY FIREWALL (10 Rules)  │
-                               │     * 48h Fatigue Token Bucket  │
-                               │     * Anti-Quiet Hours (IST)    │
-                               │     * PII Masking & Sanitize    │
-                               └────────────────┬────────────────┘
-                                                │
-                     ┌──────────────────────────┴──────────────────────────┐
-                     ▼                                                     ▼
-        ┌─────────────────────────┐                           ┌─────────────────────────┐
-        │   Multi-Gateway Router  │                           │   Human Ops Review Queue│
-        │ (Razorpay ➔ Cashfree)   │                           │    (RBAC Operator Gate) │
-        └────────────┬────────────┘                           └─────────────────────────┘
-                     │
-                     ▼
-        ┌─────────────────────────┐
-        │ WhatsApp UPI Deep Link  │
-        │    (upi://pay?pa=...)   │
-        └────────────┬────────────┘
-                     │
-                     ▼
-        ┌─────────────────────────┐
-        │ Immutable Audit Ledger  │
-        │  (SHA-256 Merkle Chain) │
-        └─────────────────────────┘
+┌────────────────────────────────┐     ┌────────────────────────────────┐     ┌────────────────────────────────┐
+│        1. AI PROPOSES          │     │       2. POLICY DECIDES        │     │       3. SYSTEMS EXECUTE       │
+│                                │     │                                │     │                                │
+│ • 50-Persona Shadow Simulation │ ──► │ • 48h Fatigue Token Bucket     │ ──► │ • PostgreSQL Advisory Mutex    │
+│ • Thompson Sampling Bandit     │     │ • Anti-Quiet Hours Guard (IST) │     │ • WhatsApp UPI Deep Links      │
+│ • Bank Sentinel (dF/dt Radar)  │     │ • ₹50,000 Safety Gate          │     │ • SHA-256 Merkle Audit Ledger  │
+└────────────────────────────────┘     └────────────────────────────────┘     └────────────────────────────────┘
 ```
 
 ---
 
-## 📂 Project Structure
-
-```
-AI Revenue Recovery/
-├── ai/                              # AI & ML Reasoning Subsystems
-│   ├── agent.py                     # AI Recovery Agent core logic & EV formulas
-│   ├── bandit.py                    # Recency-Decayed Thompson Sampling Bandit
-│   ├── copy_rag.py                  # Semantic Copy Retrieval Augmented Generation
-│   ├── llm_adapter.py               # LiteLLM / Gemini / OpenAI Proxy Adapter
-│   ├── offer_engine.py              # Dynamic Micro-Incentive & Discount Engine
-│   ├── oracle.py                    # Digital Twin Simulation & Circadian Clock
-│   ├── prompts.py                   # PII-Sanitized LLM System Prompt Templates
-│   └── shadow_simulator.py          # 50-Persona Synthetic Shadow Simulator
-│
-├── apps/
-│   ├── api/                         # FastAPI Backend Application
-│   │   ├── routes/                  # API Endpoints
-│   │   │   ├── auth.py              # Operator JWT Authentication
-│   │   │   ├── benchmark.py         # Reproducible Simulation Runner
-│   │   │   ├── chaos.py             # Chaos Engineering Injections
-│   │   │   ├── human_ops.py         # Human Review Queue & Manual Overrides
-│   │   │   ├── intel.py             # Sandbox Simulation, Copilot & Pulse
-│   │   │   ├── recovery.py          # Cases, Traces, DPDP Erasure & Certificates
-│   │   │   ├── stream.py            # Real-Time Server-Sent Events (SSE)
-│   │   │   ├── system.py            # System Configuration & Telemetry
-│   │   │   └── webhooks.py          # Razorpay Webhook Ingestion & HMAC Gate
-│   │   ├── auth.py                  # JWT Verification & Operator Bootstrapping
-│   │   ├── logging.py               # OWASP Security Headers & Structured Logs
-│   │   ├── main.py                  # FastAPI Lifespan, Middleware & Startup
-│   │   ├── metrics.py               # Prometheus Metrics Exporter
-│   │   └── settings.py              # Pydantic Settings & URL Normalization
-│   │
-│   └── web/                         # Next.js 14 Web Command Center
-│       ├── src/
-│       │   ├── app/                 # App Router Pages
-│       │   │   ├── page.tsx         # Mission Control Overview
-│       │   │   ├── benchmark/       # Benchmark Simulation Viewer
-│       │   │   ├── cases/           # Active Cases Pipeline
-│       │   │   ├── chaos/           # Chaos Lab & Concurrency Blitz
-│       │   │   ├── intel/           # Intelligence Pulse & Copilot
-│       │   │   ├── login/           # Operator Login Screen
-│       │   │   ├── ops/             # Human Ops Review Queue
-│       │   │   └── sandbox/         # AI What-If Simulation Studio
-│       │   ├── components/          # Reusable Glassmorphism UI Components
-│       │   │   ├── BankMatrix.tsx   # Live Bank Velocity Sparklines
-│       │   │   ├── CommandPalette.tsx # Universal Ctrl+K Navigation
-│       │   │   ├── ShortcutsModal.tsx # Keyboard Shortcuts Guide (?)
-│       │   │   ├── WebhookSimulator.tsx # 1-Click Live Webhook Injector
-│       │   │   └── TraceModal.tsx   # SHA-256 Merkle Certificate Exporter
-│       │   ├── hooks/               # Custom React Hooks (useReviveData)
-│       │   └── lib/                 # API Client & Type Definitions
-│       ├── package.json             # Web Dependencies
-│       └── tailwind.config.js       # Dark Theme UI Styling
-│
-├── domain/                          # Pure Domain Business Models
-│   ├── bank_health/                 # Bank Telemetry & Predictive Sentinel
-│   ├── models/                      # SQLAlchemy & Pydantic Schemas
-│   ├── policy/                      # Hard Policy Firewall (10 Rules)
-│   └── state_machine/               # Financial Recovery Finite State Machine
-│
-├── services/                        # Infrastructure & Gateway Adapters
-│   ├── audit_ledger.py              # Cryptographic Merkle Hash Chaining
-│   ├── db.py                        # Neon Postgres / SQLite Connection Pool
-│   ├── gateway_adapter.py           # Multi-Gateway Failover (Razorpay/Cashfree)
-│   ├── lock_manager.py              # Distributed Advisory Mutex Locking
-│   ├── recovery_worker.py           # Background Autonomous Recovery Daemon
-│   ├── redis_cache.py               # Redis & In-Memory Fallback Adapter
-│   ├── stamped_cache.py             # MIT XFetch & Singleflight Request Coalescing
-│   └── whatsapp_service.py          # NPCI UPI Deep Link & WhatsApp Formatter
-│
-├── scripts/                         # CLI & Dev Testing Tools
-│   ├── test_dev_mode.py             # Dev-Mode Live 11-Step E2E Verification
-│   └── seed_demo.py                 # Demo Dataset Seed Generator
-│
-├── tests/                           # Complete Test Suite (75 Tests)
-│   ├── chaos/                       # Chaos Resilience Tests
-│   ├── e2e/                         # End-to-End Simulation Tests
-│   ├── integration/                 # API, Webhook, Auth & DPDP Tests
-│   ├── load/                        # Concurrency Stress & Stampede Tests
-│   └── unit/                        # AI, Bandit, Policy & FSM Unit Tests
-│
-├── .env.example                     # Environment Configuration Template
-├── Dockerfile.api                   # Production Docker Container for Backend
-├── Dockerfile.web                   # Production Docker Container for Frontend
-├── docker-compose.yml               # Multi-Service Production Compose
-├── requirements.txt                 # Python Dependencies
-└── README.md                        # Master Project Documentation
-```
-
----
-
-## 🛠️ Tech Stack
-
-| Domain | Technologies Used |
-| :--- | :--- |
-| **Backend API** | Python 3.11+, FastAPI, Uvicorn, Pydantic v2, HTTPX, Starlette |
-| **Database & ORM** | PostgreSQL (Neon Serverless AWS), SQLAlchemy 2.0 (asyncpg), SQLite fallback |
-| **AI / Machine Learning** | Thompson Sampling Multi-Armed Bandit, Shadow Persona Simulation, LiteLLM, Gemini 3.5 Flash |
-| **Frontend UI** | Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS, Lucide Icons, Framer Motion |
-| **Caching & Concurrency** | Redis, Singleflight Coalescing, MIT XFetch Cache, PostgreSQL Advisory Locks |
-| **Security & Compliance** | HMAC-SHA256 Signatures, OWASP Security Headers, India DPDP Act 2023, SOC2 Audit Ledger |
-| **Telemetry & Testing** | Prometheus Metrics, Sentry SDK, PyTest, AnyIO, AsyncIO |
-
----
-
-## ⚙️ Environment Variables
-
-Create a `.env` file in the root directory (refer to `.env.example`):
-
-```ini
-# ---------------------------------------------------------------------
-# Application Environment & Security
-# ---------------------------------------------------------------------
-APP_ENV=development                       # 'development' | 'production' | 'test'
-APP_VERSION=2.1.0
-APP_NAME=REVIVE
-SECRET_KEY=generate_a_secure_random_hex_32_chars
-JWT_SECRET=generate_a_secure_jwt_secret_64_chars
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-
-# ---------------------------------------------------------------------
-# Database Configuration (Neon Serverless PostgreSQL)
-# ---------------------------------------------------------------------
-DATABASE_URL=postgresql+asyncpg://user:password@ep-cool-sample.ap-southeast-1.aws.neon.tech/neondb?ssl=require
-
-# ---------------------------------------------------------------------
-# Razorpay Gateway Credentials
-# ---------------------------------------------------------------------
-RAZORPAY_KEY_ID=rzp_test_your_key_id
-RAZORPAY_KEY_SECRET=rzp_test_your_key_secret
-RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
-RAZORPAY_ENABLE_LIVE_API=false             # Set to true for live money movement
-
-# ---------------------------------------------------------------------
-# AI Reasoner & LLM Gateway (LiteLLM / Gemini / OpenAI)
-# ---------------------------------------------------------------------
-OPENAI_API_KEY=sk-litellm-proxy-key
-OPENAI_MODEL=vertex_ai/gemini-3.5-flash
-OPENAI_BASE_URL=https://litellm-platform.penpencil.guru
-
-# ---------------------------------------------------------------------
-# Autonomous Recovery Worker
-# ---------------------------------------------------------------------
-WORKER_ENABLED=true
-WORKER_INTERVAL_SECONDS=5
-CIRCADIAN_SEND_ENABLED=true
-LINK_FOLLOWUP_SECONDS=120
-```
-
----
-
-## 🚀 Quick Start Guide
+## ⚡ Quick Start (In 2 Minutes)
 
 ### Prerequisites
-- **Python 3.11+** installed
-- **Node.js 18+** & **npm** installed
+- Python 3.11+ & Node.js 18+
 
----
-
-### 1. Backend Setup (FastAPI)
-
+### 1. Start Backend (FastAPI)
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-username/ai-revenue-recovery.git
-cd ai-revenue-recovery
-
-# 2. Create and activate Python virtual environment
-python -m venv venv
-# On Windows:
+# Activate virtual environment
 ./venv/Scripts/activate
-# On Linux/macOS:
-source venv/bin/activate
 
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Copy environment template
-cp .env.example .env
-
-# 5. Start FastAPI Backend Server
+# Start API Server on port 8000
 uvicorn apps.api.main:app --port 8000 --reload
 ```
-> Backend will be running at `http://localhost:8000`  
-> Interactive OpenAPI documentation: `http://localhost:8000/docs`
+> API Docs live at: `http://localhost:8000/docs`
 
----
-
-### 2. Frontend Setup (Next.js)
-
+### 2. Start Frontend (Next.js)
 ```bash
-# 1. Open a new terminal and navigate to web app
 cd apps/web
-
-# 2. Install dependencies
 npm install
-
-# 3. Start Next.js Development Server
 npm run dev
 ```
-> Command Center Dashboard will be running at `http://localhost:3000`  
-> Default Operator Login: **`ops`** / **`revive-ops-2026`**
+> Command Center live at: `http://localhost:3000`  
+> Operator Credentials: **`ops`** / **`revive-ops-2026`**
 
----
-
-### 3. Automated Test Suite (75 Tests)
-
-Run the full automated testing suite covering Chaos Engineering, Load Stress, Concurrency Locks, AI Bandits, and API endpoints:
-
+### 3. Run Test Suite (75 Tests Passing)
 ```bash
 ./venv/Scripts/pytest -v
 ```
 
-**Expected output:**
-```
-============================= 75 passed in 25.92s =============================
-```
+---
+
+## 📊 Reproducible Benchmarks (`seed=42`)
+
+Simulated across 500 enterprise customers and 2,000 transaction failure events:
+
+| Metric | Legacy Default Dunning | REVIVE Autonomous Agent | Measured Impact |
+| :--- | :---: | :---: | :---: |
+| **Total Revenue Recovered** | ₹1,82,400 | **₹2,84,900** | **+₹1,02,500 (+56.2% Lift)** |
+| **Net Recovery Rate** | 21.4% | **33.8%** | **+12.4% Conversion Boost** |
+| **Customer Spam Nudges** | 1,840 | **0** | **1,840 Spam Pings Saved** |
+| **Policy Violations** | 412 | **0** | **100% Policy Compliance** |
+| **Average Settlement Time** | 36.2 hours | **4.1 hours** | **88.6% Faster Recovery** |
+| **Automated Tests** | — | **75 / 75 PASSED** | **100% Green Verification** |
 
 ---
 
-### 4. Dev-Mode End-to-End Live Test
+## 🔌 API Endpoints
 
-Execute the comprehensive 11-step interactive workflow test script:
-
-```bash
-./venv/Scripts/python scripts/test_dev_mode.py
-```
-
----
-
-## 🌐 Deployment Guide
-
-### A. Frontend Deployment on Vercel
-
-The Next.js Command Center (`apps/web`) is fully optimized for **Vercel**:
-
-1. Push your repository to **GitHub**.
-2. Go to [Vercel Dashboard](https://vercel.com/) $\to$ **New Project** $\to$ Select repository.
-3. Configure the build settings:
-   - **Root Directory:** `apps/web`
-   - **Framework Preset:** `Next.js`
-4. Add Environment Variable:
-   - `NEXT_PUBLIC_API_URL` = `https://your-backend-api.onrender.com/api/v1`
-5. Click **Deploy**.
-
----
-
-### B. Backend Deployment on Render / Docker
-
-Because REVIVE uses a persistent background worker (`_worker_loop`) for scheduling retries and Server-Sent Events (SSE), deploy the backend on **Render**, **Railway**, or **AWS ECS**:
-
-#### Deploying on Render:
-1. In [Render Dashboard](https://render.com/) $\to$ **New Web Service** $\to$ Connect GitHub repo.
-2. Configure settings:
-   - **Root Directory:** `.`
-   - **Environment:** `Python`
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT`
-3. Add Environment Variables from your `.env`.
-4. Click **Create Web Service**.
-
-#### Deploying with Docker Compose:
-```bash
-docker compose up --build -d
-```
-
----
-
-### C. Live Razorpay Webhook Setup
-
-1. Log in to your **[Razorpay Dashboard](https://dashboard.razorpay.com/)**.
-2. Navigate to **Settings** $\to$ **Webhooks** $\to$ **Add New Webhook**.
-3. Set **Webhook URL**:
-   - `https://your-backend-api.onrender.com/api/v1/webhooks/razorpay`
-   *(For instant local testing, run `npx ngrok http 8000` and use your HTTPS ngrok link)*.
-4. Set **Secret**: Matches your `RAZORPAY_WEBHOOK_SECRET` in `.env`.
-5. Select Active Events:
-   - `payment.failed`
-   - `payment.captured`
-   - `payment.authorized`
-   - `subscription.charged`
-   - `subscription.halted`
-6. Click **Save Webhook**.
-
----
-
-## 🔌 API Endpoints Reference
-
-| Method | Endpoint | Description |
+| Method | Route | Description |
 | :--- | :--- | :--- |
-| `GET` | `/health` | Liveness health check probe |
-| `GET` | `/ready` | Deep Kubernetes readiness probe (DB + Sentinel + Worker) |
-| `GET` | `/metrics` | Prometheus text metrics exporter |
-| `POST` | `/api/v1/webhooks/razorpay` | Razorpay HMAC-signed webhook ingestion endpoint |
-| `GET` | `/api/v1/recovery/cases` | List active recovery cases with pagination & filters |
-| `GET` | `/api/v1/recovery/cases/{id}` | Case detail with SHA-256 Merkle chain verification |
-| `GET` | `/api/v1/recovery/cases/{id}/export` | Export signed SOC2/ISO-27001 Cryptographic Certificate |
+| `POST` | `/api/v1/webhooks/razorpay` | Ingests HMAC-signed Razorpay payment webhooks |
+| `GET` | `/api/v1/recovery/cases` | Lists active recovery pipeline cases with filters |
+| `GET` | `/api/v1/recovery/cases/{id}` | Inspects case detail and SHA-256 decision traces |
+| `GET` | `/api/v1/recovery/cases/{id}/export` | Exports signed SOC2/ISO-27001 Cryptographic Certificate |
 | `POST` | `/api/v1/recovery/customers/{id}/erase-pii` | India DPDP Act 2023 Section 12 PII Erasure Handler |
-| `GET` | `/api/v1/recovery/bank-health` | Real-time bank health telemetry and failure velocities |
-| `POST` | `/api/v1/intel/sandbox-simulate` | AI What-If Simulation Studio evaluation |
+| `POST` | `/api/v1/intel/sandbox-simulate` | Sub-2ms AI What-If Simulation Studio evaluation |
 | `POST` | `/api/v1/intel/copilot` | Natural Language Ops Copilot Query Parser |
-| `GET` | `/api/v1/intel/pulse` | Intelligence Pulse: Circadian window & expected recovery EV |
-| `GET` | `/api/v1/ops/queue` | Human review queue for high-risk / KYC-gated cases |
-| `POST` | `/api/v1/ops/cases/{id}/approve` | Approve human ops action with operator signature |
-| `GET` | `/api/v1/stream/events` | Real-time Server-Sent Events (SSE) telemetry stream |
-| `POST` | `/api/v1/chaos/llm-outage` | Inject LLM outage chaos test (validates deterministic engine) |
-| `POST` | `/api/v1/chaos/bank-downtime` | Inject simulated bank downtime to test Sentinel circuit breaker |
+| `GET` | `/api/v1/recovery/bank-health` | Real-time banking gateway telemetry and failure velocity |
+| `GET` | `/health` & `/ready` | OWASP-hardened liveness and deep readiness probes |
 
 ---
 
-## 📊 Reproducible Benchmarks
+## 🌐 Production Hosting
 
-Simulated against 500 synthetic enterprise subscription customers across 2,000 real-world failure events (`seed=42`):
-
-```
-┌──────────────────────────────────┬──────────────────┬─────────────────────┬───────────────────────────┐
-│ Metric                           │ Legacy Baseline  │ REVIVE Autonomous   │ Realized Impact           │
-├──────────────────────────────────┼──────────────────┼─────────────────────┼───────────────────────────┤
-│ Total Revenue Recovered          │ ₹1,82,400        │ ₹2,84,900           │ +₹1,02,500 (+56.2% Lift)  │
-│ Recovery Conversion Rate         │ 21.4%            │ 33.8%               │ +12.4% Higher Conversion  │
-│ Customer Spam Nudges Sent        │ 1,840            │ 0                   │ 1,840 Spam Pings Saved    │
-│ Financial Policy Violations      │ 412              │ 0                   │ 100% Policy Compliance    │
-│ Average Recovery Time            │ 36.2 hours       │ 4.1 hours           │ 88.6% Faster Settlement   │
-│ Automated PyTest Suite           │ —                │ 75 / 75 PASSED      │ 100% Green Verification   │
-└──────────────────────────────────┴──────────────────┴─────────────────────┴───────────────────────────┘
-```
-
----
-
-## 🛡️ Compliance & Security Standards
-
-- **OWASP Hardened:** `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and 1-year `Strict-Transport-Security` (HSTS).
-- **India DPDP Act 2023:** Cryptographic erasure of customer PII upon request (`/customers/{id}/erase-pii`).
-- **SOC2 Type-II & ISO-27001:** SHA-256 Merkle hash chain audit traces with mathematical tamper detection.
-- **NPCI UPI Compliance:** Dynamic standard `upi://pay?pa=...` deep linking with payee name and transaction note validation.
+| Layer | Recommended Host | Notes |
+| :--- | :--- | :--- |
+| **Web Frontend** | **Vercel** ⚡ | Global Edge CDN for Next.js App Router (`apps/web`). |
+| **API Backend** | **Render / Railway / Docker** 🚀 | 24/7 background recovery daemon + Server-Sent Events (`apps/api`). |
+| **Database** | **Neon PostgreSQL** 🐘 | Serverless Postgres on AWS with connection retry resilience. |
 
 ---
 
