@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: revive_postgres
+    environment:
+      POSTGRES_USER: revive
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-revive}
+      POSTGRES_DB: revive
+    volumes:
+      - revive_pg:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U revive -d revive"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  revive-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: revive_backend
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql+asyncpg://revive:${POSTGRES_PASSWORD:-revive}@postgres:5432/revive
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_revive_key}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-rzp_test_revive_secret}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-test_webhook_secret_revive_2026}
+      RAZORPAY_ENABLE_LIVE_API: ${RAZORPAY_ENABLE_LIVE_API:-false}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-in-production}
+      OPERATOR_USERNAME: ${OPERATOR_USERNAME:-ops}
+      OPERATOR_PASSWORD: ${OPERATOR_PASSWORD:-revive-ops-2026}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      WORKER_ENABLED: "true"
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  revive-frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+    container_name: revive_web
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+    depends_on:
+      revive-backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  revive_pg:

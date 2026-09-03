@@ -1,0 +1,38 @@
+groups:
+  - name: revive_alerts
+    rules:
+      - alert: SentinelCircuitTriggered
+        expr: revive_sentinel_circuit_triggered > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Predictive Bank Downtime Sentinel circuit open"
+          description: "Bank Sentinel has detected high failure velocity (dF/dt >= 3.5/min) and triggered proactive cool-off to protect retry caps."
+
+      - alert: HighPolicyVetoRate
+        expr: rate(revive_policy_veto[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Policy Engine veto rate detected"
+          description: "Policy Engine is vetoing over 10% of AI proposed actions due to safety rule violations."
+
+      - alert: WebhookDeadLetterHighRate
+        expr: rate(revive_webhook_failed[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Elevated webhook dead-letter rate"
+          description: "Incoming Razorpay webhook failure rate exceeds 5% in a 5-minute sliding window."
+
+      - alert: WorkerExecutionStalled
+        expr: rate(revive_worker_ticks[5m]) == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Recovery background worker loop stalled"
+          description: "No tick events recorded from recovery worker loop in the last 3 minutes."
