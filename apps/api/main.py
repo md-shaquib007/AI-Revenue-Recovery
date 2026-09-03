@@ -98,7 +98,7 @@ app = FastAPI(
 )
 
 app.add_middleware(EnterpriseSecurityHeadersMiddleware)
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestContextMiddleware)
 app.add_middleware(
@@ -320,15 +320,16 @@ async def serve_unified_ui(full_path: str):
         # Check specific html route (e.g. /sandbox -> sandbox.html)
         html_candidate = os.path.join(_UI_OUT_DIR, f"{clean_path}.html")
         if clean_path and os.path.isfile(html_candidate):
-            return FileResponse(html_candidate)
-        # Check direct asset file (e.g. images, favicon.ico)
+            return FileResponse(html_candidate, headers={"Cache-Control": "public, max-age=0, must-revalidate"})
+        # Check direct asset file (e.g. images, favicon.ico, js, css)
         direct_candidate = os.path.join(_UI_OUT_DIR, clean_path)
         if clean_path and os.path.isfile(direct_candidate):
-            return FileResponse(direct_candidate)
+            cache_header = "public, max-age=31536000, immutable" if "/_next/" in full_path or clean_path.endswith((".js", ".css", ".png", ".jpg", ".webp", ".svg", ".ico", ".woff2")) else "public, max-age=3600"
+            return FileResponse(direct_candidate, headers={"Cache-Control": cache_header})
         # Default to root index.html
         index_file = os.path.join(_UI_OUT_DIR, "index.html")
         if os.path.isfile(index_file):
-            return FileResponse(index_file)
+            return FileResponse(index_file, headers={"Cache-Control": "public, max-age=0, must-revalidate"})
 
     return {
         "service": settings.app_name,
