@@ -66,6 +66,7 @@ async def get_human_escalation_queue(
 
 
 @router.post("/cases/{case_id}/decision")
+@router.post("/cases/{case_id}/approve")
 async def submit_human_decision(
     case_id: str,
     decision: HumanDecisionRequest,

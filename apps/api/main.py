@@ -153,6 +153,7 @@ async def prometheus_metrics():
 
 
 @app.get("/{full_path:path}", include_in_schema=False)
+@app.head("/{full_path:path}", include_in_schema=False)
 async def serve_unified_ui(full_path: str):
     """Serves the Next.js visual Command Center directly from the FastAPI container."""
     if full_path.startswith("api/") or full_path in ("docs", "openapi.json"):
