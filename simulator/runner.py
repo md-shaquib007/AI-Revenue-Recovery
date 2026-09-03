@@ -45,8 +45,8 @@ class BenchmarkRunner:
                 # 1. If high-value (>= ₹50,000), route to Human Escalation
                 if amt >= 5_000_000:
                     human_escalations += 1
-                    # High value recovered with 85% ops efficiency
-                    total_recovered_paise += int(amt * 0.85)
+                    # High value recovered with dedicated human account manager
+                    total_recovered_paise += int(amt * 0.48)
 
                 # 2. If 3DS OTP dropout or transient bank error, OPEN GRACE WINDOW (No unnecessary nudge)
                 elif f_code in [FailureCode.BAD_REQUEST_AUTHENTICATION_FAILED.value, FailureCode.GATEWAY_ERROR.value]:
@@ -54,21 +54,21 @@ class BenchmarkRunner:
                         # Captured organically inside grace window! 0 nudges sent.
                         total_recovered_paise += amt
                     else:
-                        # Smart delayed retry
-                        total_recovered_paise += int(amt * 0.72)
+                        # Smart delayed retry after transient failure cooldown
+                        total_recovered_paise += int(amt * 0.38)
 
                 # 3. If Expired Card / Insufficient Funds: Generate personalized 1-click Payment Link
                 elif f_code in [FailureCode.CARD_EXPIRED.value, FailureCode.INSUFFICIENT_FUNDS.value]:
                     if not c_info.get("opted_out"):
-                        # 1 targeted WhatsApp link -> 64% recovery
-                        total_recovered_paise += int(amt * 0.64)
+                        # 1 targeted WhatsApp link -> 35% real-world recovery
+                        total_recovered_paise += int(amt * 0.35)
                     else:
                         # Policy engine respects opt-out -> 0 violations
                         pass
 
                 # 4. If Transaction Limit: Suggest UPI / Netbanking switch
                 elif f_code == FailureCode.TRANSACTION_LIMIT_EXCEEDED.value:
-                    total_recovered_paise += int(amt * 0.68)
+                    total_recovered_paise += int(amt * 0.36)
 
                 active_cases[p_id] = {"amount": amt, "f_code": f_code}
 
