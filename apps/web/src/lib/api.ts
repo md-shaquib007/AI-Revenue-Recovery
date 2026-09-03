@@ -32,13 +32,15 @@ export async function apiFetch<T = unknown>(path: string, init?: RequestInit): P
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
-  if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/auth/")) {
-    const status = await fetch(`${API_BASE}/system/status`)
-      .then((r) => r.json())
-      .catch(() => ({ auth_required: false }));
-    if (status.auth_required) {
-      clearToken();
-      window.location.href = "/login";
+  if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/auth/") && !path.startsWith("/webhooks/")) {
+    if (path.startsWith("/ops")) {
+      const status = await fetch(`${API_BASE}/system/status`)
+        .then((r) => r.json())
+        .catch(() => ({ auth_required: false }));
+      if (status.auth_required) {
+        clearToken();
+        window.location.href = "/login";
+      }
     }
   }
   if (!res.ok) {

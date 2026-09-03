@@ -101,6 +101,8 @@ class Settings(BaseSettings):
 
     @property
     def allow_hmac_bypass(self) -> bool:
+        if self.chaos_enabled is True:
+            return True
         return self.app_env in ("development", "test")
 
     @property

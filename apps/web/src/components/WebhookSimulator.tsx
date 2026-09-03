@@ -102,7 +102,7 @@ export function WebhookSimulator({ onInjected }: { onInjected?: () => void }) {
         },
       };
 
-      await apiFetch("/webhooks/razorpay", {
+      await apiFetch("/webhooks/simulate", {
         method: "POST",
         body: JSON.stringify(payload),
       });

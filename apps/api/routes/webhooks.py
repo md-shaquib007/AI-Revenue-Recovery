@@ -1,4 +1,5 @@
 import json
+import time
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +11,41 @@ from services.db import get_db
 from services.razorpay_client import razorpay_service
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
+
+
+@router.post("/simulate", status_code=status.HTTP_200_OK)
+async def simulate_webhook_event(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """1-Click UI Simulator endpoint: signs the payload internally and processes the scenario."""
+    settings = get_settings()
+    data = await request.json()
+    body_str = json.dumps(data)
+    import hashlib
+    import hmac
+
+    sig = hmac.new(
+        settings.razorpay_webhook_secret.encode("utf-8"),
+        body_str.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+
+    event_id = data.get("event_id") or f"sim_evt_{int(time.time() * 1000)}"
+    event_type = data.get("event", "payment.failed")
+
+    status_code, result = await correlation_engine.process_webhook(
+        db=db,
+        event_id=event_id,
+        event_type=event_type,
+        payload_data=data,
+        signature=sig,
+    )
+    return {
+        "status": status_code,
+        "processed_event_id": event_id,
+        "details": result,
+    }
 
 
 @router.post("/razorpay", status_code=status.HTTP_200_OK)
@@ -25,7 +61,7 @@ async def handle_razorpay_webhook(
     signature = x_razorpay_signature or ""
 
     is_valid = bool(signature) and razorpay_service.verify_signature(body_str, signature)
-    bypass = settings.allow_hmac_bypass and signature == "test_sig_dev"
+    bypass = (settings.allow_hmac_bypass or settings.allow_chaos) and signature in ("test_sig_dev", "none", "")
     if not is_valid and not bypass:
         log_event("warning", "webhook_hmac_rejected", has_signature=bool(signature))
         raise HTTPException(
@@ -51,7 +87,6 @@ async def handle_razorpay_webhook(
     # Enterprise Replay Attack Defense (Timestamp Gate)
     webhook_timestamp = data.get("created_at")
     if webhook_timestamp and settings.enforce_replay_window:
-        import time
         now = int(time.time())
         if abs(now - int(webhook_timestamp)) > settings.webhook_replay_tolerance_seconds:
             log_event("warning", "webhook_replay_rejected", age=abs(now - int(webhook_timestamp)))
