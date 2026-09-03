@@ -273,13 +273,64 @@ npm run dev
 
 ---
 
-## 🌐 Production Hosting
+## 🌐 Complete Production Deployment on Render
 
-| Layer | Recommended Host | Notes |
-| :--- | :--- | :--- |
-| **Web Frontend** | **Vercel** ⚡ | Global Edge CDN for Next.js App Router (`apps/web`). |
-| **API Backend** | **Render / Railway / Docker** 🚀 | 24/7 background recovery daemon + Server-Sent Events (`apps/api`). |
-| **Database** | **Neon PostgreSQL** 🐘 | Serverless Postgres on AWS with connection retry resilience. |
+REVIVE is fully containerized and configured for **1-Click Full-Stack Deployment on Render** using [`render.yaml`](./render.yaml):
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 RENDER PRODUCTION ARCHITECTURE                                   │
+├────────────────────────────────┬────────────────────────────────┬────────────────────────────────┤
+│    🌐 FRONTEND (Next.js 14)    │    ⚙️ BACKEND API (FastAPI)     │   🐘 DATABASE (PostgreSQL)     │
+│    Render Web Service (Node)   │    Render Web Service (Python) │   Neon Serverless Postgres     │
+│    URL: https://revive-web...  │    URL: https://revive-api...  │   AWS Asia Pacific (Singapore) │
+└────────────────────────────────┴────────────────────────────────┴────────────────────────────────┘
+```
+
+### Option A: 1-Click Render Blueprint *(Recommended)*
+1. In [Render Dashboard](https://dashboard.render.com/) $\to$ Click **"New +"** $\to$ **"Blueprint"**.
+2. Connect your GitHub repository: `md-shaquib007/AI-Revenue-Recovery`.
+3. Render will auto-detect `render.yaml` and provision both **`revive-api`** and **`revive-web`**.
+4. Fill in your `DATABASE_URL` (from [Neon.tech](https://neon.tech/)) and Razorpay credentials.
+5. Click **"Apply"** — both services will build and link automatically!
+
+---
+
+### Option B: Manual Web Service Setup on Render
+
+#### 1. Backend API Service (`revive-api`):
+- **Runtime:** `Python 3`
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT`
+- **Plan:** `Free ($0 / month)`
+- **Environment Variables:**
+  - `APP_ENV` = `production`
+  - `DATABASE_URL` = `postgresql+asyncpg://...` *(Neon Postgres)*
+  - `AUTH_REQUIRED` = `false`
+  - `CHAOS_ENABLED` = `true`
+  - `WORKER_ENABLED` = `true`
+  - `RATE_LIMIT_ENABLED` = `false`
+  - `CIRCADIAN_SEND_ENABLED` = `true`
+  - `LINK_FOLLOWUP_SECONDS` = `120`
+  - `CORS_ORIGINS` = `*`
+
+#### 2. Frontend Web Service (`revive-web`):
+- **Root Directory:** `apps/web`
+- **Runtime:** `Node`
+- **Build Command:** `npm install && npm run build`
+- **Start Command:** `npm start`
+- **Plan:** `Free ($0 / month)`
+- **Environment Variables:**
+  - `NEXT_PUBLIC_API_URL` = `https://revive-api-xxxx.onrender.com/api/v1`
+
+---
+
+### 💳 Live Razorpay Webhook Configuration
+
+1. In [Razorpay Dashboard](https://dashboard.razorpay.com/) $\to$ **Settings** $\to$ **Webhooks** $\to$ **+ Add New Webhook**.
+2. **Webhook URL:** `https://revive-api-xxxx.onrender.com/api/v1/webhooks/razorpay`
+3. **Secret:** Matches your `RAZORPAY_WEBHOOK_SECRET`.
+4. **Events:** `payment.failed`, `payment.captured`, `payment.authorized`, `subscription.charged`, `subscription.halted`.
 
 ---
 

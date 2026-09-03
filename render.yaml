@@ -38,8 +38,18 @@ services:
         value: https://litellm-platform.penpencil.guru
       - key: OPENAI_MODEL
         value: vertex_ai/gemini-3.5-flash
+      - key: AUTH_REQUIRED
+        value: "false"
+      - key: CHAOS_ENABLED
+        value: "true"
       - key: WORKER_ENABLED
         value: "true"
+      - key: RATE_LIMIT_ENABLED
+        value: "false"
+      - key: CIRCADIAN_SEND_ENABLED
+        value: "true"
+      - key: LINK_FOLLOWUP_SECONDS
+        value: "120"
       - key: CORS_ORIGINS
         value: "*"
 
