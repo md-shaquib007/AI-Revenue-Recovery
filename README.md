@@ -26,7 +26,7 @@
 
 Every year, subscription businesses lose **15% to 20% of recurring revenue** to involuntary payment failures — bank 3DS dropouts, core banking downtime, expired cards, and temporary balance dips.
 
-**REVIVE** is an autonomous AI revenue recovery agent for Razorpay subscriptions that diagnoses payment failures in sub-2ms, simulates customer behavior across 50 prospective personas, and recovers revenue with **zero spam, zero policy violations, and 100% cryptographic auditability**.
+**REVIVE** is an autonomous AI revenue recovery agent for Razorpay subscriptions that diagnoses payment failures in sub-2ms, simulates customer behavior across 50 prospective personas, and recovers addressable failed revenue with **smart 120s grace periods, deterministic policy guardrails, and cryptographic tamper-evident auditability**.
 
 ---
 
@@ -190,16 +190,38 @@ Simulated across 500 enterprise customers and 2,000 transaction failure events:
 
 ---
 
-## 🇮🇳 Ground Reality: How These Numbers Are Achieved
+## 🇮🇳 Ground Reality: Why 100% Recovery is Impossible (and What REVIVE Actually Recovers)
 
-Every metric produced by REVIVE is grounded in Indian recurring payment mechanics:
+In recurring subscription systems, **claiming 100% recovery is a mathematical and operational impossibility**. Real-world payment failures split into two distinct categories:
 
-1. **The 3DS / OTP Organic Resolution Window (28% of Failures):**
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                             TOTAL SUBSCRIPTION PAYMENT FAILURES (100%)                           │
+└────────────────────────────────────────────────┬─────────────────────────────────────────────────┘
+                                                 │
+            ┌────────────────────────────────────┴────────────────────────────────────┐
+            ▼                                                                         ▼
+┌────────────────────────────────────────┐                ┌────────────────────────────────────────┐
+│   UNRECOVERABLE / HARD CHURN (55–65%)  │                │   ADDRESSABLE TRANSIENT FAILURES (35–45%)│
+├────────────────────────────────────────┤                ├────────────────────────────────────────┤
+│ • Permanently closed bank accounts     │                │ • 3DS / SMS OTP network dropouts       │
+│ • Intentionally cancelled cards        │                │ • Temporary month-end balance dips     │
+│ • Stolen / blocked instruments         │                │ • Core banking batch maintenance       │
+│ • Explicit user churn intent           │                │ • Daily transaction limit exceeded     │
+├────────────────────────────────────────┤                ├────────────────────────────────────────┤
+│ ❌ Retrying burns fees & annoys users  │                │ ✅ REVIVE surgically recovers this tier │
+│ 🛡️ REVIVE suppresses spam & respects   │                │ 🚀 Boosts net recovery from 21% to 34%+│
+│    user opt-out preferences            │                │ ⚡ Uses WhatsApp UPI & Smart Timing    │
+└────────────────────────────────────────┘                └────────────────────────────────────────┘
+```
+
+### 🔍 How REVIVE Truly Creates Real-World Value:
+1. **The 3DS / OTP Organic Resolution Window (~28% of Failures):**
    - In India, SMS OTP delays from core banking gateways cause ~28% of initial checkout dropouts.
-   - **Ground Truth:** ~30% of customers retry on their own within 120 seconds. Naive dunning immediately blasts an email. REVIVE opens a silent 120s `IN_GRACE_WINDOW`, recovering the payment organically and **saving 1,840 redundant spam notifications**.
+   - **Ground Truth:** ~30% of customers retry on their own within 120 seconds. Naive dunning immediately blasts an email. REVIVE opens a silent 120s `IN_GRACE_WINDOW`, recovering the payment organically and **eliminating ~88% of redundant spam notifications**.
 
 2. **Channel Economics: WhatsApp UPI vs. Legacy Email:**
-   - Email open rates in India for dunning reminders hover at 12–18% with ~15% payment completion.
+   - Email open rates in India for billing reminders hover at 12–18% with only ~15% payment completion.
    - Interactive WhatsApp messages with native **NPCI UPI Deep Links (`upi://pay?pa=...`)** achieve a 78% read rate and a **60–64% 1-click completion rate**, especially when aligned with salary cycles (1st–5th of the month).
 
 3. **Core Banking Outage Protection (Nightly Maintenance Windows):**
