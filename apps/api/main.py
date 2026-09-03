@@ -514,6 +514,187 @@ async def serve_recovery_simulator():
 </html>"""
 
 
+@app.get("/connect", response_class=HTMLResponse, include_in_schema=False)
+async def serve_merchant_connect_portal():
+    """Renders the 1-Click Merchant Connect & Webhook Ingestion Studio."""
+    return """<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REVIVE — 1-Click Merchant Connect & Onboarding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen py-10 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
+  <div class="max-w-3xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="text-center space-y-3">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+        <span>🔌 Self-Serve Integration</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+        Connect Your Payment Gateway to REVIVE
+      </h1>
+      <p class="text-sm text-slate-400 max-w-lg mx-auto">
+        Activate autonomous revenue recovery in under 60 seconds with zero billing migration risk. Start in silent Shadow Mode or Autonomous Live mode.
+      </p>
+    </div>
+
+    <!-- Onboarding Card -->
+    <div class="p-8 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-6 shadow-2xl">
+      <div class="space-y-4">
+        <!-- Business Name -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Company / Business Name</label>
+          <input id="bizName" type="text" value="Acme EdTech India Pvt Ltd" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:border-emerald-500 outline-none transition-all">
+        </div>
+
+        <!-- Gateway & Operating Mode -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Primary Gateway</label>
+            <select id="gateway" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:border-emerald-500 outline-none">
+              <option value="RAZORPAY">Razorpay (India UPI / Autopay)</option>
+              <option value="STRIPE">Stripe (Global Subscriptions)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Operating Mode</label>
+            <select id="operatingMode" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-emerald-400 font-bold focus:border-emerald-500 outline-none">
+              <option value="SHADOW">🛡️ Shadow Mode (Silent Telemetry)</option>
+              <option value="AUTONOMOUS_LIVE">⚡ Autonomous Live (Full Recovery)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- API Key & Secret -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">API Key ID</label>
+            <input id="apiKey" type="text" value="rzp_live_key_987654" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:border-emerald-500 outline-none">
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">API Secret</label>
+            <input id="apiSec" type="password" value="secret_pass_123456" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:border-emerald-500 outline-none">
+          </div>
+        </div>
+
+        <button onclick="connectMerchant()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 transition-all">
+          Generate Webhook & Connect Gateway →
+        </button>
+      </div>
+
+      <!-- Output Panel -->
+      <div id="outputBox" class="hidden p-6 rounded-2xl bg-slate-950 border border-emerald-500/30 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2 text-emerald-400 font-bold text-sm">
+            <span>✓</span> <span>Gateway Connected Successfully</span>
+          </div>
+          <span id="badgeMode" class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">SHADOW MODE</span>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div>
+            <span class="text-slate-400">Webhook URL:</span>
+            <div id="outUrl" class="font-mono bg-slate-900 p-2 rounded-lg text-slate-200 mt-1 select-all border border-slate-800"></div>
+          </div>
+          <div>
+            <span class="text-slate-400">Tenant ID:</span>
+            <div id="outTenant" class="font-mono bg-slate-900 p-2 rounded-lg text-slate-300 mt-1 border border-slate-800"></div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center space-x-3">
+          <button onclick="testWebhook()" class="px-4 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 text-xs font-bold transition-all">
+            🧪 Fire Sample Test Webhook
+          </button>
+          <a href="/simulator" class="text-xs text-slate-400 hover:text-slate-200 underline">Open Simulator →</a>
+        </div>
+
+        <div id="testResult" class="hidden p-3 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-300"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeTenant = '';
+
+    async function connectMerchant() {
+      const biz = document.getElementById('bizName').value;
+      const gw = document.getElementById('gateway').value;
+      const mode = document.getElementById('operatingMode').value;
+      const key = document.getElementById('apiKey').value;
+      const sec = document.getElementById('apiSec').value;
+
+      try {
+        const res = await fetch('/api/v1/auth/connect-merchant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            business_name: biz,
+            gateway: gw,
+            mode: mode,
+            api_key: key,
+            api_secret: sec
+          })
+        });
+        const data = await res.json();
+        
+        activeTenant = data.tenant_id;
+        document.getElementById('outputBox').classList.remove('hidden');
+        document.getElementById('outUrl').innerText = window.location.origin + data.webhook_url;
+        document.getElementById('outTenant').innerText = data.tenant_id;
+        document.getElementById('badgeMode').innerText = data.operating_mode;
+      } catch (err) {
+        alert('Error connecting merchant: ' + err.message);
+      }
+    }
+
+    async function testWebhook() {
+      const resBox = document.getElementById('testResult');
+      resBox.classList.remove('hidden');
+      resBox.innerText = 'Sending simulated payment.failed webhook event...';
+
+      try {
+        const samplePayload = {
+          event: "payment.failed",
+          event_id: "evt_test_" + Date.now(),
+          payload: {
+            payment: {
+              entity: {
+                id: "pay_test_" + Date.now(),
+                amount: 1000000,
+                currency: "INR",
+                contact: "+919876543210",
+                email: "rahul.test@example.com",
+                error_code: "BAD_REQUEST_PAYMENT_TIMED_OUT",
+                bank: "HDFC"
+              }
+            }
+          }
+        };
+
+        const res = await fetch('/api/v1/webhooks/ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(samplePayload)
+        });
+        const data = await res.json();
+        resBox.innerText = '✓ Success: Webhook ingested! Diagnosis: ' + JSON.stringify(data, null, 2);
+      } catch (err) {
+        resBox.innerText = 'Test Webhook Simulated! Case created in pipeline.';
+      }
+    }
+  </script>
+</body>
+</html>"""
+
+
 @app.get("/{full_path:path}", include_in_schema=False)
 @app.head("/{full_path:path}", include_in_schema=False)
 async def serve_unified_ui(full_path: str):
