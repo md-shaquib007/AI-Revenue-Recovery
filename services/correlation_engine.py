@@ -18,6 +18,7 @@ from apps.api.metrics import metrics
 from apps.api.settings import get_settings
 from domain.bank_health.sentinel import bank_sentinel
 from services.gateway_adapter import gateway_router
+from services.salary_predictor import salary_predictor
 from services.whatsapp_service import whatsapp_service
 from domain.models.entities import (
     CustomerEntity,
@@ -102,15 +103,19 @@ class EventCorrelationEngine:
             }
 
         try:
-            payment_dict = payload_data.get("payload", {}).get("payment", {}).get("entity", {})
-            if not payment_dict and "payment" in payload_data:
-                payment_dict = payload_data.get("payment", {})
+            payment_dict = (
+                payload_data.get("payload", {}).get("payment", {}).get("entity", {})
+                or payload_data.get("payload", {}).get("payment_link", {}).get("entity", {})
+                or payload_data.get("payment", {})
+                or payload_data.get("payment_link", {})
+                or {}
+            )
 
             payment_id = payment_dict.get("id")
             if not payment_id:
                 webhook_entity.status = "SKIPPED_NO_PAYMENT_ENTITY"
                 webhook_entity.processed_at = datetime.utcnow()
-                return "SKIPPED", {"message": "Payload does not contain payment entity"}
+                return "SKIPPED", {"message": "Payload does not contain payment or payment_link entity"}
 
             customer_id = payment_dict.get("customer_id") or f"cust_{payment_id[-8:]}"
             async with lock_manager.acquire(f"payment:{payment_id}"):
@@ -146,6 +151,13 @@ class EventCorrelationEngine:
                     EventType.SUBSCRIPTION_CANCELLED.value,
                 ):
                     outcome = await self._handle_subscription_stop(db, payment_dict, event_type, start_time)
+                elif event_type in (
+                    "payment_link.paid",
+                    "payment_link.partially_paid",
+                    "payment_link.cancelled",
+                    "invoice.paid",
+                ):
+                    outcome = await self._handle_payment_link_paid(db, payload_data, customer_entity, event_id, start_time)
                 else:
                     outcome = {"status": "ACKNOWLEDGED", "event_type": event_type}
 
@@ -360,6 +372,99 @@ class EventCorrelationEngine:
 
         return {"status": "CAPTURED", "payment_id": payment_id}
 
+    async def _handle_payment_link_paid(
+        self,
+        db: AsyncSession,
+        payload_data: Dict[str, Any],
+        customer_entity: CustomerEntity,
+        event_id: str,
+        start_time: float,
+    ) -> Dict[str, Any]:
+        plink = payload_data.get("payload", {}).get("payment_link", {}).get("entity", {})
+        if not plink and "payment_link" in payload_data:
+            plink = payload_data.get("payment_link", {})
+
+        notes = plink.get("notes") or {}
+        case_id = notes.get("case_id")
+        amount_paid = int(plink.get("amount_paid") or plink.get("amount") or 0)
+
+        if not case_id:
+            return {"status": "SKIPPED", "message": "No case_id associated with payment link"}
+
+        stmt = (
+            select(RecoveryCaseEntity)
+            .where(RecoveryCaseEntity.id == case_id)
+            .options(
+                selectinload(RecoveryCaseEntity.payment),
+                selectinload(RecoveryCaseEntity.customer),
+                selectinload(RecoveryCaseEntity.decision_traces),
+            )
+        )
+        res = await db.execute(stmt)
+        case_entity = res.scalars().first()
+        if not case_entity:
+            return {"status": "NOT_FOUND", "case_id": case_id}
+
+        case_entity.amount_recovered_paise = (case_entity.amount_recovered_paise or 0) + amount_paid
+        total_amount = case_entity.amount_in_paise
+        case_entity.balance_due_paise = max(0, total_amount - case_entity.amount_recovered_paise)
+        case_entity.partial_payments_count = (case_entity.partial_payments_count or 0) + 1
+
+        predicted_day = customer_entity.predicted_salary_day or salary_predictor.predict_salary_day()
+        next_sweep = salary_predictor.calculate_next_sweep_time(predicted_day)
+
+        if case_entity.balance_due_paise <= 0:
+            RecoveryStateMachine.validate_transition(RecoveryState(case_entity.state), RecoveryState.RECOVERED)
+            case_entity.state = RecoveryState.RECOVERED.value
+            case_entity.resolved_at = datetime.utcnow()
+            case_entity.resolution_type = ResolutionType.LINK_PAID.value
+            status_result = "RECOVERED"
+        else:
+            RecoveryStateMachine.validate_transition(RecoveryState(case_entity.state), RecoveryState.PARTIALLY_RECOVERED)
+            case_entity.state = RecoveryState.PARTIALLY_RECOVERED.value
+            case_entity.next_action_at = next_sweep
+            status_result = "PARTIALLY_RECOVERED"
+
+        self._record_decision_trace(
+            db=db,
+            case_entity=case_entity,
+            agent_mode=AgentMode.AI_REASONER.value,
+            raw_event_type="payment_link.paid",
+            diagnosis={
+                "amount_paid_rupees": amount_paid / 100.0,
+                "total_recovered_rupees": case_entity.amount_recovered_paise / 100.0,
+                "remaining_balance_rupees": case_entity.balance_due_paise / 100.0,
+                "predicted_salary_day": predicted_day,
+                "status": status_result,
+            },
+            proposed_actions=[{"action": ActionType.PAYMENT_LINK.value, "confidence": 1.0}],
+            proposed_action=ActionType.PAYMENT_LINK.value,
+            approved_action=ActionType.PAYMENT_LINK.value,
+            policy_checks=[{
+                "rule_name": "PARTIAL_WATERFALL_HARVEST",
+                "passed": True,
+                "detail": f"Collected ₹{amount_paid/100:.2f}. Remaining Balance: ₹{case_entity.balance_due_paise/100:.2f}",
+            }],
+            final_action=ActionType.PAYMENT_LINK.value,
+            execution_result={"message": f"Successfully registered partial payment of ₹{amount_paid/100:.2f}"},
+            latency_ms=int((time.time() - start_time) * 1000),
+        )
+        event_bus.publish({
+            "type": "case.partial_recovered" if status_result == "PARTIALLY_RECOVERED" else "case.recovered",
+            "case_id": case_entity.id,
+            "amount_paid": amount_paid,
+            "total_recovered": case_entity.amount_recovered_paise,
+            "balance_due": case_entity.balance_due_paise,
+        })
+        return {
+            "status": status_result,
+            "case_id": case_entity.id,
+            "amount_paid": amount_paid,
+            "total_recovered": case_entity.amount_recovered_paise,
+            "balance_due": case_entity.balance_due_paise,
+            "next_salary_sweep": str(next_sweep),
+        }
+
     async def _handle_payment_failed(
         self,
         db: AsyncSession,
@@ -555,6 +660,7 @@ class EventCorrelationEngine:
             description_base = f"Payment for {payment_entity.order_id or payment_id}"
             description = f"{copy_headline} | {description_base}"
 
+            is_partial_candidate = amount >= 300_000 and failure_code == FailureCode.INSUFFICIENT_FUNDS
             link_resp = await gateway_router.create_payment_link(
                 amount_in_paise=amount,
                 customer_name=customer_entity.name,
@@ -563,6 +669,8 @@ class EventCorrelationEngine:
                 description=description,
                 bank_key=bank_key,
                 idempotency_key=idem_key,
+                accept_partial=is_partial_candidate,
+                first_min_partial_amount=int(amount * 0.33) if is_partial_candidate else None,
             )
 
             # Generate 1-click WhatsApp UPI Deep-Link Payload

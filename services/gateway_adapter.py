@@ -27,6 +27,8 @@ class MultiGatewayFallbackRouter:
         description: str = "Subscription Recovery Payment",
         bank_key: Optional[str] = None,
         idempotency_key: Optional[str] = None,
+        accept_partial: bool = False,
+        first_min_partial_amount: Optional[int] = None,
     ) -> Dict[str, Any]:
         target_bank = (bank_key or "HDFC").upper()
 
@@ -45,6 +47,8 @@ class MultiGatewayFallbackRouter:
             customer_phone=customer_phone,
             description=description,
             idempotency_key=idempotency_key,
+            accept_partial=accept_partial,
+            first_min_partial_amount=first_min_partial_amount,
         )
         res["gateway_used"] = "RAZORPAY"
         return res

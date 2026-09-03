@@ -54,6 +54,7 @@ class RecoveryState(str, Enum):
     SCHEDULED_RETRY = "SCHEDULED_RETRY"
     LINK_SENT = "LINK_SENT"
     ESCALATED_HUMAN = "ESCALATED_HUMAN"
+    PARTIALLY_RECOVERED = "PARTIALLY_RECOVERED"
     RECOVERED = "RECOVERED"
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"  # Late capture resolved before action
@@ -63,6 +64,7 @@ class ActionType(str, Enum):
     WAIT = "WAIT"                          # Grace window / bank health cooloff
     SMART_RETRY = "SMART_RETRY"            # Background auto-charge when bank recovers
     PAYMENT_LINK = "PAYMENT_LINK"          # Send 1-click Razorpay payment link (WhatsApp/SMS)
+    PARTIAL_WATERFALL = "PARTIAL_WATERFALL"# Dynamic partial payment slice (e.g. ₹3K of ₹10K)
     METHOD_SWITCH = "METHOD_SWITCH"        # Suggest UPI Intent if Card failed
     HUMAN_ESCALATION = "HUMAN_ESCALATION"  # High-value or anomalous case for Ops
     CANCEL_RECOVERY = "CANCEL_RECOVERY"    # Already captured or user paid

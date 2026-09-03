@@ -38,6 +38,9 @@ import asyncio
 from sqlalchemy.exc import OperationalError
 
 
+from sqlalchemy import text
+
+
 async def init_db(max_retries: int = 3, retry_delay: float = 0.5):
     """
     Create tables if they do not exist.
@@ -47,6 +50,29 @@ async def init_db(max_retries: int = 3, retry_delay: float = 0.5):
         try:
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
+                # Ensure new columns exist on legacy tables (SQLite + PostgreSQL)
+                if settings.is_sqlite:
+                    for sql in [
+                        "ALTER TABLE customers ADD COLUMN predicted_salary_day INTEGER",
+                        "ALTER TABLE recovery_cases ADD COLUMN amount_recovered_paise BIGINT DEFAULT 0",
+                        "ALTER TABLE recovery_cases ADD COLUMN balance_due_paise BIGINT",
+                        "ALTER TABLE recovery_cases ADD COLUMN partial_payments_count INTEGER DEFAULT 0",
+                    ]:
+                        try:
+                            await conn.execute(text(sql))
+                        except Exception:
+                            pass
+                else:
+                    for sql in [
+                        "ALTER TABLE customers ADD COLUMN IF NOT EXISTS predicted_salary_day INTEGER",
+                        "ALTER TABLE recovery_cases ADD COLUMN IF NOT EXISTS amount_recovered_paise BIGINT DEFAULT 0",
+                        "ALTER TABLE recovery_cases ADD COLUMN IF NOT EXISTS balance_due_paise BIGINT",
+                        "ALTER TABLE recovery_cases ADD COLUMN IF NOT EXISTS partial_payments_count INTEGER DEFAULT 0",
+                    ]:
+                        try:
+                            await conn.execute(text(sql))
+                        except Exception:
+                            pass
             break
         except (OperationalError, OSError):
             if attempt == max_retries:

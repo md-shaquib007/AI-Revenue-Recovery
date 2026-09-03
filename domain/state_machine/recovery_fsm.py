@@ -46,6 +46,7 @@ class RecoveryStateMachine:
 
         # From LINK_SENT
         (RecoveryState.LINK_SENT, RecoveryState.RECOVERED),
+        (RecoveryState.LINK_SENT, RecoveryState.PARTIALLY_RECOVERED),
         (RecoveryState.LINK_SENT, RecoveryState.SCHEDULED_RETRY),
         (RecoveryState.LINK_SENT, RecoveryState.LINK_SENT),
         (RecoveryState.LINK_SENT, RecoveryState.ESCALATED_HUMAN),
@@ -55,9 +56,19 @@ class RecoveryStateMachine:
         # From ESCALATED_HUMAN
         (RecoveryState.ESCALATED_HUMAN, RecoveryState.SCHEDULED_RETRY),
         (RecoveryState.ESCALATED_HUMAN, RecoveryState.LINK_SENT),
+        (RecoveryState.ESCALATED_HUMAN, RecoveryState.PARTIALLY_RECOVERED),
         (RecoveryState.ESCALATED_HUMAN, RecoveryState.RECOVERED),
         (RecoveryState.ESCALATED_HUMAN, RecoveryState.CANCELLED),
         (RecoveryState.ESCALATED_HUMAN, RecoveryState.EXPIRED),
+
+        # From PARTIALLY_RECOVERED
+        (RecoveryState.PARTIALLY_RECOVERED, RecoveryState.PARTIALLY_RECOVERED),
+        (RecoveryState.PARTIALLY_RECOVERED, RecoveryState.RECOVERED),
+        (RecoveryState.PARTIALLY_RECOVERED, RecoveryState.LINK_SENT),
+        (RecoveryState.PARTIALLY_RECOVERED, RecoveryState.SCHEDULED_RETRY),
+        (RecoveryState.PARTIALLY_RECOVERED, RecoveryState.ESCALATED_HUMAN),
+        (RecoveryState.PARTIALLY_RECOVERED, RecoveryState.CANCELLED),
+        (RecoveryState.PARTIALLY_RECOVERED, RecoveryState.EXPIRED),
     }
 
     TERMINAL_STATES = {

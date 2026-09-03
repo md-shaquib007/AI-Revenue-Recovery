@@ -68,6 +68,7 @@ class CustomerEntity(Base):
     contact_timestamps = Column(JSON, default=list)
     last_contacted_at = Column(DateTime, nullable=True)
     opted_out = Column(Boolean, default=False, nullable=False)
+    predicted_salary_day = Column(Integer, nullable=True)
 
     payments = relationship("PaymentEntity", back_populates="customer", lazy="noload")
     subscriptions = relationship("SubscriptionEntity", back_populates="customer", lazy="noload")
@@ -99,6 +100,9 @@ class RecoveryCaseEntity(Base):
     state = Column(String(32), nullable=False, index=True)
     risk_tier = Column(String(16), nullable=False)
     amount_in_paise = Column(BigInteger, nullable=False)
+    amount_recovered_paise = Column(BigInteger, default=0, nullable=False)
+    balance_due_paise = Column(BigInteger, nullable=True)
+    partial_payments_count = Column(Integer, default=0, nullable=False)
     grace_expires_at = Column(DateTime, nullable=True)
     next_action_at = Column(DateTime, nullable=True)
     resolved_at = Column(DateTime, nullable=True)

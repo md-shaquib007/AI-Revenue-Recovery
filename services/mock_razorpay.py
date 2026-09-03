@@ -40,6 +40,8 @@ class MockRazorpayClient:
         customer_phone: Optional[str] = None,
         description: str = "Subscription Recovery Payment",
         idempotency_key: Optional[str] = None,
+        accept_partial: bool = False,
+        first_min_partial_amount: Optional[int] = None,
     ) -> Dict[str, Any]:
         """Simulates Razorpay Payment Link API (POST /v1/payment_links)."""
         if idempotency_key and idempotency_key in self._idempotent:
@@ -50,6 +52,8 @@ class MockRazorpayClient:
             "id": link_id,
             "amount": amount_in_paise,
             "currency": "INR",
+            "accept_partial": accept_partial,
+            "first_min_partial_amount": first_min_partial_amount or (int(amount_in_paise * 0.33) if accept_partial else None),
             "status": "created",
             "short_url": short_url,
             "description": description,
