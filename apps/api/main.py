@@ -187,6 +187,16 @@ async def customer_self_service_portal(case_id: str):
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
+  <!-- Global Nav -->
+  <div class="max-w-md w-full mb-4 flex items-center justify-between text-xs text-slate-400">
+    <a href="/" class="hover:text-emerald-400 flex items-center space-x-1"><span>← Back to Command Center</span></a>
+    <div class="flex items-center space-x-3">
+      <a href="/simulator" class="hover:text-emerald-400">CFO Simulator</a>
+      <span>•</span>
+      <a href="/connect" class="hover:text-emerald-400">Connect Gateway</a>
+    </div>
+  </div>
+
   <div class="max-w-md w-full glass rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -329,8 +339,25 @@ async def serve_recovery_simulator():
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen py-10 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
-  <div class="max-w-4xl mx-auto space-y-8">
+<body class="bg-slate-950 text-slate-100 min-h-screen py-6 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Global Navigation -->
+    <nav class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xl">
+      <a href="/" class="flex items-center space-x-2 font-extrabold text-sm text-emerald-400">
+        <span>⚡</span> <span>REVIVE OS</span>
+      </a>
+      <div class="flex items-center space-x-1 sm:space-x-2 text-slate-300 font-semibold">
+        <a href="/" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">📊 Command Center</a>
+        <a href="/connect" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">🔌 Merchant Connect</a>
+        <a href="/simulator" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">⚡ CFO Simulator</a>
+        <a href="/pay/demo-case" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">🛍️ Customer Portal</a>
+        <a href="/docs" target="_blank" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">⚡ API Docs</a>
+      </div>
+      <a href="https://github.com/md-shaquib007/AI-Revenue-Recovery" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-1">
+        <span>📦 GitHub</span>
+      </a>
+    </nav>
+
     <!-- Header -->
     <div class="text-center space-y-3">
       <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
@@ -529,8 +556,25 @@ async def serve_merchant_connect_portal():
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen py-10 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
-  <div class="max-w-3xl mx-auto space-y-8">
+<body class="bg-slate-950 text-slate-100 min-h-screen py-6 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
+  <div class="max-w-3xl mx-auto space-y-6">
+    <!-- Global Navigation -->
+    <nav class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xl">
+      <a href="/" class="flex items-center space-x-2 font-extrabold text-sm text-emerald-400">
+        <span>⚡</span> <span>REVIVE OS</span>
+      </a>
+      <div class="flex items-center space-x-1 sm:space-x-2 text-slate-300 font-semibold">
+        <a href="/" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">📊 Command Center</a>
+        <a href="/connect" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">🔌 Merchant Connect</a>
+        <a href="/simulator" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">⚡ CFO Simulator</a>
+        <a href="/pay/demo-case" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">🛍️ Customer Portal</a>
+        <a href="/docs" target="_blank" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">⚡ API Docs</a>
+      </div>
+      <a href="https://github.com/md-shaquib007/AI-Revenue-Recovery" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-1">
+        <span>📦 GitHub</span>
+      </a>
+    </nav>
+
     <!-- Header -->
     <div class="text-center space-y-3">
       <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
