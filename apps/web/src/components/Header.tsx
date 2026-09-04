@@ -68,6 +68,9 @@ export function Header({ system }: { system: SystemStatus | null }) {
 
 const TABS = [
   { href: "/", id: "overview", label: "Overview" },
+  { href: "/connect", id: "connect", label: "🔌 Connect Merchant" },
+  { href: "/simulator", id: "simulator", label: "⚡ CFO Simulator" },
+  { href: "/pay/demo-case", id: "portal", label: "🛍️ Customer Portal" },
   { href: "/sandbox", id: "sandbox", label: "AI Sandbox" },
   { href: "/intel", id: "intel", label: "Intelligence" },
   { href: "/cases", id: "cases", label: "Cases" },

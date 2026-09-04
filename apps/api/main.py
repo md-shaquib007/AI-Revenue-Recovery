@@ -74,7 +74,7 @@ async def lifespan(app: FastAPI):
     log_event("info", "revive_started", env=settings.app_env, version=settings.app_version)
     yield
 
-    log_event("info", "graceful_shutdown_initiating", message="Flushing in-flight tasks and worker queues")
+    log_event("info", "graceful_shutdown_initiating", detail="Flushing in-flight tasks and worker queues")
     if _worker_task:
         _worker_task.cancel()
         try:
@@ -342,20 +342,20 @@ async def serve_recovery_simulator():
 <body class="bg-slate-950 text-slate-100 min-h-screen py-6 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
   <div class="max-w-4xl mx-auto space-y-6">
     <!-- Global Navigation -->
-    <nav class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xl">
-      <a href="/" class="flex items-center space-x-2 font-extrabold text-sm text-emerald-400">
+    <nav class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3 text-xs shadow-xl overflow-x-auto whitespace-nowrap">
+      <a href="/" class="flex items-center space-x-2 font-extrabold text-sm text-emerald-400 shrink-0">
         <span>⚡</span> <span>REVIVE OS</span>
       </a>
-      <div class="flex items-center space-x-1 sm:space-x-2 text-slate-300 font-semibold">
+      <div class="flex items-center space-x-1 sm:space-x-2 text-slate-300 font-semibold shrink-0">
         <a href="/" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">📊 Command Center</a>
         <a href="/connect" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">🔌 Merchant Connect</a>
         <a href="/simulator" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">⚡ CFO Simulator</a>
         <a href="/pay/demo-case" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">🛍️ Customer Portal</a>
         <a href="/docs" target="_blank" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">⚡ API Docs</a>
+        <a href="https://github.com/md-shaquib007/AI-Revenue-Recovery" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 inline-flex items-center space-x-1">
+          <span>📦 GitHub</span>
+        </a>
       </div>
-      <a href="https://github.com/md-shaquib007/AI-Revenue-Recovery" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-1">
-        <span>📦 GitHub</span>
-      </a>
     </nav>
 
     <!-- Header -->
@@ -559,20 +559,20 @@ async def serve_merchant_connect_portal():
 <body class="bg-slate-950 text-slate-100 min-h-screen py-6 px-4 antialiased selection:bg-emerald-500 selection:text-slate-950">
   <div class="max-w-3xl mx-auto space-y-6">
     <!-- Global Navigation -->
-    <nav class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xl">
-      <a href="/" class="flex items-center space-x-2 font-extrabold text-sm text-emerald-400">
+    <nav class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3 text-xs shadow-xl overflow-x-auto whitespace-nowrap">
+      <a href="/" class="flex items-center space-x-2 font-extrabold text-sm text-emerald-400 shrink-0">
         <span>⚡</span> <span>REVIVE OS</span>
       </a>
-      <div class="flex items-center space-x-1 sm:space-x-2 text-slate-300 font-semibold">
+      <div class="flex items-center space-x-1 sm:space-x-2 text-slate-300 font-semibold shrink-0">
         <a href="/" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">📊 Command Center</a>
         <a href="/connect" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">🔌 Merchant Connect</a>
         <a href="/simulator" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">⚡ CFO Simulator</a>
         <a href="/pay/demo-case" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">🛍️ Customer Portal</a>
         <a href="/docs" target="_blank" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all">⚡ API Docs</a>
+        <a href="https://github.com/md-shaquib007/AI-Revenue-Recovery" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 inline-flex items-center space-x-1">
+          <span>📦 GitHub</span>
+        </a>
       </div>
-      <a href="https://github.com/md-shaquib007/AI-Revenue-Recovery" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-1">
-        <span>📦 GitHub</span>
-      </a>
     </nav>
 
     <!-- Header -->

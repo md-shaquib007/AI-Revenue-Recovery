@@ -65,6 +65,94 @@ export function MissionControl({
 
       <WebhookSimulator onInjected={() => {}} />
 
+      {/* Vertical Feature Directory & Quick Access */}
+      <div className="glass-panel rounded-2xl p-6 bg-slate-900/90 border border-slate-800 shadow-2xl space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🚀</span>
+            <div>
+              <h3 className="text-base font-extrabold text-white tracking-tight">REVIVE Feature Directory & Quick Launch</h3>
+              <p className="text-xs text-slate-400">All 8 core recovery studios and compliance tools accessible in 1 click</p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-bold">100% Active</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <a href="/connect" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">🔌</span>
+              <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold">60s Setup</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors">1-Click Merchant Connect</h4>
+            <p className="text-xs text-slate-400">Razorpay/Stripe keys + Shadow Mode silent telemetry</p>
+          </a>
+
+          <a href="/simulator" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">⚡</span>
+              <span className="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded font-bold">44.9x ROI</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-cyan-400 transition-colors">CFO Recovery Simulator</h4>
+            <p className="text-xs text-slate-400">Quantify counterfactual ARR lift & net rupee return</p>
+          </a>
+
+          <a href="/pay/demo-case" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-purple-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">🛍️</span>
+              <span className="text-[10px] font-mono bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-bold">4 Choices</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-purple-400 transition-colors">Customer Self-Service Portal</h4>
+            <p className="text-xs text-slate-400">33% Partial Split, 14-Day Pause & Plan Downsell</p>
+          </a>
+
+          <a href="/sandbox" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">🧠</span>
+              <span className="text-[10px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-bold">EV Scorer</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-blue-400 transition-colors">State Graph & Scorer</h4>
+            <p className="text-xs text-slate-400">Behavioral state machine & Expected Value engine</p>
+          </a>
+
+          <a href="/intel" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">📡</span>
+              <span className="text-[10px] font-mono bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Sentinel</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">Bank Outage Radar</h4>
+            <p className="text-xs text-slate-400">Real-time HDFC/SBI core banking health radar</p>
+          </a>
+
+          <a href="/docs" target="_blank" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-teal-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">📖</span>
+              <span className="text-[10px] font-mono bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded font-bold">OpenAPI</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-teal-400 transition-colors">Swagger API Documentation</h4>
+            <p className="text-xs text-slate-400">Interactive REST API contracts & schemas</p>
+          </a>
+
+          <a href="/metrics" target="_blank" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-rose-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">📊</span>
+              <span className="text-[10px] font-mono bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-bold">Grafana</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-rose-400 transition-colors">Prometheus /metrics</h4>
+            <p className="text-xs text-slate-400">OpenTelemetry standard exposition format</p>
+          </a>
+
+          <a href="https://github.com/md-shaquib007/AI-Revenue-Recovery" target="_blank" className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-900 transition-all space-y-2 group block">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">📦</span>
+              <span className="text-[10px] font-mono bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-bold">101 Tests</span>
+            </div>
+            <h4 className="font-bold text-sm text-white group-hover:text-indigo-400 transition-colors">GitHub Source Code</h4>
+            <p className="text-xs text-slate-400">Complete codebase, tests & documentation</p>
+          </a>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 glass-panel rounded-2xl p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">

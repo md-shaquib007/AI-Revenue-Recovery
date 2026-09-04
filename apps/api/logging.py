@@ -55,9 +55,9 @@ def configure_logging() -> logging.Logger:
 logger = configure_logging()
 
 
-def log_event(level: str, message: str, **fields) -> None:
+def log_event(level: str, event_name: str, **fields) -> None:
     sanitized_fields = {k: sanitize_pii_value(v) for k, v in fields.items()}
-    payload = {"level": level, "message": message, **sanitized_fields}
+    payload = {"level": level, "message": event_name, **sanitized_fields}
     getattr(logger, level if level in ("info", "warning", "error", "debug") else "info")(
         json.dumps(payload, default=str)
     )
